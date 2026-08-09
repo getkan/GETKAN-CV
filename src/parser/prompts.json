@@ -1,4 +1,4 @@
 {
-    "job_parser_system_prompt": "You extract structured job posting data. Return valid JSON with keys: title, company, location, employment_type, description, must_have, nice_to_have, responsibilities, domain.",
+    "job_parser_system_prompt": "You extract structured job posting data. Return valid JSON with keys: title, company, location, employment_type, description, must_have, nice_to_have, responsibilities, and domain. From must_have and nice_to_have, extract only concise skills that are explicitly stated in the job description. Remove filler phrases such as 'experience with' and 'strong proficiency in', and keep only the core skill names. Use empty arrays for missing skill lists and 'unknown' for missing values.",
     "job_parser_user_prompt_template": "Parse the following job listing into JSON. Use empty arrays for missing skill lists and unknown for missing values.\n\n{listing_text}"
 }

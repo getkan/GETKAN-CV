@@ -39,18 +39,17 @@ def _count_skill_mentions(skill: str, packets: list[dict[str, Any]]) -> dict[str
         "skill": normalize_text(skill),
         "must_haves": must_have_count,
         "good_to_haves": good_to_have_count,
-        "total": must_have_count + good_to_have_count,
     }
 
 
 def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
-    lines = ["## Skills", "", "| Skill | Must Haves | Good To Haves | Total |", "| --- | ---: | ---: | ---: |"]
+    lines = ["## Skills", "", "| Skill | Must Haves | Good To Haves |", "| --- | ---: | ---: |"]
     if not skill_rows:
-        lines.append("| None identified | 0 | 0 | 0 |")
+        lines.append("| None identified | 0 | 0 |")
         return lines
 
     for row in skill_rows:
-        lines.append(f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} | {row['total']} |")
+        lines.append(f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} |")
     return lines
 
 
@@ -69,14 +68,13 @@ def parse_skill_rows_from_table_lines(lines: list[str]) -> list[dict[str, int]]:
         if not line.startswith("| ") or line.startswith("| Skill") or line.startswith("| ---") or line.startswith("| None identified"):
             continue
         parts = [part.strip() for part in line.strip("|").split("|")]
-        if len(parts) != 4:
+        if len(parts) != 3:
             continue
         skill_rows.append(
             {
                 "skill": parts[0],
                 "must_haves": int(parts[1]),
                 "good_to_haves": int(parts[2]),
-                "total": int(parts[3]),
             }
         )
     return skill_rows

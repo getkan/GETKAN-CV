@@ -41,17 +41,17 @@ SKILL_STOPWORDS = {
 
 DEFAULT_ADVISOR_PROMPTS: dict[str, str] = {
     "advisor_general_advice_system_prompt": (
-        "You are a senior career advisor. Return only valid JSON with summary, general_advice, skills, recommended_job_titles, resume_recommendations, interview_prep, ats_keyword_gaps, and portfolio_suggestions. No markdown."
+        "You are a senior career advisor. Return only valid JSON with summary, general_advice, recommended_job_titles, resume_recommendations, interview_prep, ats_keyword_gaps, and portfolio_suggestions. No markdown."
     ),
     "advisor_general_advice_user_prompt_template": (
-        "Using the resume corpus and job packets, produce one concise summary and short bullets for every section. Keep the output practical and brief. Skills must come from the job packets. Job titles should fit the resume and the packet compatibility. Resume recommendations should improve hireability without inventing experience. Interview prep, ATS keyword gaps, and portfolio suggestions should be short and specific.\n\n"
+        "Using the resume corpus and job packets, produce one concise summary and short bullets for every section. Keep the output practical and brief. Job titles should fit the resume and the packet compatibility. Resume recommendations should improve hireability without inventing experience. Interview prep, ATS keyword gaps, and portfolio suggestions should be short and specific.\n\n"
         "Resume corpus:\n{resume_corpus}\n\nJob packets summary:\n{job_packets}"
     ),
     "advisor_recommendations_bundle_system_prompt": (
-        "You are a senior career advisor. Return only valid JSON with summary, general_advice, skills, recommended_job_titles, resume_recommendations, interview_prep, ats_keyword_gaps, and portfolio_suggestions. No markdown."
+        "You are a senior career advisor. Return only valid JSON with summary, general_advice, recommended_job_titles, resume_recommendations, interview_prep, ats_keyword_gaps, and portfolio_suggestions. No markdown."
     ),
     "advisor_recommendations_bundle_user_prompt_template": (
-        "Using the resume corpus and job packets, produce one concise summary and short bullets for every section. Keep the output practical and brief. Skills must come from the job packets. Job titles should fit the resume and the packet compatibility. Resume recommendations should improve hireability without inventing experience. Interview prep, ATS keyword gaps, and portfolio suggestions should be short and specific.\n\n"
+        "Using the resume corpus and job packets, produce one concise summary and short bullets for every section. Keep the output practical and brief. Job titles should fit the resume and the packet compatibility. Resume recommendations should improve hireability without inventing experience. Interview prep, ATS keyword gaps, and portfolio suggestions should be short and specific.\n\n"
         "Resume corpus:\n{resume_corpus}\n\nJob packets summary:\n{job_packets}"
     ),
     "advisor_job_titles_system_prompt": (
@@ -61,18 +61,11 @@ DEFAULT_ADVISOR_PROMPTS: dict[str, str] = {
         "Based on the resume corpus, the job packets, and the compatibility scores below, recommend job titles that best match the current resume. Include title, description, and a short rationale for each.\n\n"
         "Resume corpus:\n{resume_corpus}\n\nJob packets summary:\n{job_packets}"
     ),
-    "advisor_skills_system_prompt": (
-        "You are a senior career advisor. Return only valid JSON with a skills array of concise skill names extracted from the job packets, no markdown."
-    ),
-    "advisor_skills_user_prompt_template": (
-        "Extract 5-15 concise skills from the job packets only. Focus on skills that recur across the job packets or appear as important requirements. Return skill names only, with no explanations.\n\n"
-        "Job packets summary:\n{job_packets}"
-    ),
     "advisor_resume_recommendation_system_prompt": (
         "You are a senior career advisor. Return only valid JSON with a resume_recommendations array of concise resume improvement suggestions, no markdown."
     ),
     "advisor_resume_recommendation_user_prompt_template": (
-        "Based on the current resume corpus, job packets, and skills summary, recommend resume changes that improve hireability without inventing more work experience. Focus on sections, bullets, wording, and skills presentation.\n\n"
+        "Based on the current resume corpus and job packets, recommend resume changes that improve hireability without inventing more work experience. Focus on sections, bullets, wording, and skills presentation.\n\n"
         "Resume corpus:\n{resume_corpus}\n\nJob packets summary:\n{job_packets}"
     ),
 }
@@ -116,13 +109,6 @@ def _is_skill_candidate(value: str) -> bool:
     if len(lowered) < 2 or len(lowered) > 48:
         return False
     return True
-
-
-def _contains_term(text: str, term: str) -> bool:
-    escaped = re.escape(term)
-    if re.search(r"[^A-Za-z0-9]", term):
-        return escaped.lower() in text.lower()
-    return re.search(rf"\b{escaped}\b", text, flags=re.I) is not None
 
 
 def _collect_job_packets(output_root: Path) -> list[dict[str, Any]]:
@@ -214,22 +200,6 @@ def _compact_job_packets(packets: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return compact_packets
 
 
-def _json_schema_for_skills() -> dict[str, Any]:
-    return {
-        "type": "object",
-        "properties": {
-            "skills": {
-                "type": "array",
-                "items": {"type": "string"},
-                "minItems": 1,
-                "maxItems": 20,
-            },
-        },
-        "required": ["skills"],
-        "additionalProperties": False,
-    }
-
-
 def _unique_skills(skills: list[str]) -> list[str]:
     unique_skills: list[str] = []
     seen: set[str] = set()
@@ -266,6 +236,27 @@ def _count_skill_mentions(skill: str, packets: list[dict[str, Any]]) -> dict[str
         "good_to_haves": good_to_have_count,
         "total": must_have_count + good_to_have_count,
     }
+
+
+def _build_skill_rows_from_packets(packets: list[dict[str, Any]]) -> list[dict[str, int]]:
+    compiled_skills: list[str] = []
+    for payload in packets:
+        job = payload.get("job", {}) if isinstance(payload, dict) else {}
+        raw_skills = [
+            *[str(item) for item in (job.get("must_have") or [])],
+            *[str(item) for item in (job.get("nice_to_have") or [])],
+        ]
+        for raw_skill in raw_skills:
+            skill = _normalize_skill(raw_skill)
+            if not _is_skill_candidate(skill):
+                continue
+            compiled_skills.append(skill)
+
+    skills = _unique_skills(compiled_skills)
+    skill_rows = [_count_skill_mentions(skill, packets) for skill in skills]
+    skill_rows = [row for row in skill_rows if row["total"] > 0]
+    skill_rows.sort(key=lambda row: (-row["total"], -row["must_haves"], -row["good_to_haves"], row["skill"].lower()))
+    return skill_rows
 
 
 def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
@@ -466,12 +457,6 @@ def _generate_recommendation_sections(
             "properties": {
                 "summary": {"type": "string"},
                 "general_advice": {"type": "string"},
-                "skills": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "minItems": 1,
-                    "maxItems": 20,
-                },
                 "recommended_job_titles": {
                     "type": "array",
                     "items": {
@@ -525,7 +510,6 @@ def _generate_recommendation_sections(
             "required": [
                 "summary",
                 "general_advice",
-                "skills",
                 "recommended_job_titles",
                 "resume_recommendations",
                 "interview_prep",
@@ -539,10 +523,7 @@ def _generate_recommendation_sections(
     summary = _normalize_skill(str(payload.get("summary") or ""))
     general_advice = _normalize_skill(str(payload.get("general_advice") or ""))
 
-    skills = _unique_skills([str(item) for item in payload.get("skills", [])])
-    skill_rows = [_count_skill_mentions(skill, packets) for skill in skills]
-    skill_rows = [row for row in skill_rows if row["total"] > 0]
-    skill_rows.sort(key=lambda row: (-row["total"], -row["must_haves"], -row["good_to_haves"], row["skill"].lower()))
+    skill_rows = _build_skill_rows_from_packets(packets)
 
     scored_packets = _compact_packets_with_scores(packets)
     job_title_rows: list[dict[str, Any]] = []
