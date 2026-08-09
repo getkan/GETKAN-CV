@@ -10,6 +10,8 @@ from typing import Any, TypedDict
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .skills import normalize_skill_items as _normalize_skill_items
+
 try:
     import requests
 except ImportError:  # pragma: no cover - exercised in minimal environments
@@ -102,6 +104,8 @@ def _clean_unknown(value: Any) -> str:
     if cleaned.lower() in {"unknown", "unavailable", "n/a", "na", "none", "null"}:
         return ""
     return cleaned
+
+
 
 
 def _clean_list(items: list[str] | None) -> list[str]:
@@ -428,8 +432,8 @@ def _heuristic_fallback(text: str) -> dict[str, Any]:
         "location": _clean_unknown(location),
         "employment_type": employment_type,
         "description": _clean_unknown(description),
-        "must_have": _clean_list(must_have),
-        "nice_to_have": _clean_list(nice_to_have),
+        "must_have": _normalize_skill_items(must_have),
+        "nice_to_have": _normalize_skill_items(nice_to_have),
         "responsibilities": _clean_list(responsibilities),
         "domain": "",
     }
@@ -485,8 +489,8 @@ def extract_facts(state: JobParserState) -> JobParserState:
         "location": _clean_unknown(str(merged_payload.get("location") or "")),
         "employment_type": _normalize_employment_type(str(merged_payload.get("employment_type") or "")),
         "description": _clean_unknown(str(merged_payload.get("description") or "")),
-        "must_have": _clean_list(merged_payload.get("must_have") or []),
-        "nice_to_have": _clean_list(merged_payload.get("nice_to_have") or []),
+        "must_have": _normalize_skill_items(merged_payload.get("must_have") or []),
+        "nice_to_have": _normalize_skill_items(merged_payload.get("nice_to_have") or []),
         "responsibilities": _clean_list(merged_payload.get("responsibilities") or []),
         "domain": _clean_unknown(str(merged_payload.get("domain") or "")),
     }

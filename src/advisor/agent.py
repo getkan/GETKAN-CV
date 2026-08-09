@@ -12,6 +12,7 @@ from src.advisor.sections import (
     render_ats_keyword_gaps_section,
     render_general_advice_section,
     render_interview_prep_section,
+    render_most_compatible_jobs_section,
     render_portfolio_suggestions_section,
     render_recommend_skills_section,
     render_recommended_job_titles_section,
@@ -426,6 +427,7 @@ def _generate_recommendation_sections(
                     "Keep the strongest evidence near the top of the resume."
                 ),
             ),
+            render_most_compatible_jobs_section(rows=[]),
             render_recommend_skills_section(skill_rows=[], skills=[]),
             render_recommended_job_titles_section(rows=[]),
             render_resume_recommendation_section(rows=[]),
@@ -526,6 +528,8 @@ def _generate_recommendation_sections(
     skill_rows = _build_skill_rows_from_packets(packets)
 
     scored_packets = _compact_packets_with_scores(packets)
+    most_compatible_rows = scored_packets[:5]
+
     job_title_rows: list[dict[str, Any]] = []
     for index, item in enumerate(payload.get("recommended_job_titles", [])[:5]):
         if not isinstance(item, dict):
@@ -557,6 +561,7 @@ def _generate_recommendation_sections(
 
     sections = [
         render_general_advice_section(summary=summary, general_advice=general_advice),
+        render_most_compatible_jobs_section(rows=most_compatible_rows),
         render_recommend_skills_section(skill_rows=skill_rows, skills=[row["skill"] for row in skill_rows]),
         render_recommended_job_titles_section(rows=job_title_rows),
         render_resume_recommendation_section(rows=resume_rows),

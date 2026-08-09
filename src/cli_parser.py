@@ -37,8 +37,9 @@ def build_parser() -> argparse.ArgumentParser:
         "rebuild",
         help="Rebuild tailored output from an existing job_packet.json",
     )
-    rebuild.add_argument("job_packet_file", help="Path to a job_packet.json file")
+    rebuild.add_argument("job_packet_file", nargs="?", help="Path to a job_packet.json file")
     rebuild.add_argument("--job-name", dest="job_name", help="Optional explicit job name for output naming")
+    rebuild.add_argument("--all", action="store_true", help="Rebuild all job_packet.json files found under the output directory")
     rebuild.add_argument("-o", "--output", dest="output_dir", help="Output directory for generated artifacts")
     rebuild.add_argument("--model", dest="model_name", help="Optional OpenRouter model override")
 

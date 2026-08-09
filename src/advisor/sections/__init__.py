@@ -1,6 +1,7 @@
 from .general_advice import render_general_advice_section
 from .ats_keyword_gaps import render_ats_keyword_gaps_section
 from .interview_prep import render_interview_prep_section
+from .most_compatible_jobs import render_most_compatible_jobs_section
 from .portfolio_suggestions import render_portfolio_suggestions_section
 from .job_titles import render_recommended_job_titles_section
 from .resume_recommendation import render_resume_recommendation_section

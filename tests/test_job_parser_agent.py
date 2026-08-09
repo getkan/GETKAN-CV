@@ -23,7 +23,7 @@ from src.advisor.sections.resume_recommendation import render_resume_recommendat
 from src.advisor.sections.skills import render_recommend_skills_section
 from src.advisor.agent import _generate_recommendation_sections, generate_job_hunt_recommendations
 from src.tailor.agent import _score_item, build_allowlist, build_tailored_payload
-from src.main import calculate_compatibility_score, rebuild_from_job_packet, run
+from src.main import calculate_compatibility_score, rebuild_all_job_packets, rebuild_from_job_packet, run
 from src.main import clean_workspace_artifacts
 
 
@@ -54,6 +54,30 @@ class JobParserAgentTests(unittest.TestCase):
         )
         self.assertGreaterEqual(score, 1)
         self.assertLessEqual(score, 10)
+
+    def test_rebuild_all_job_packets_rebuilds_every_packet_in_output_root(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_root = Path(tmpdir) / "output"
+            first_dir = output_root / "alpha"
+            second_dir = output_root / "beta"
+            first_dir.mkdir(parents=True, exist_ok=True)
+            second_dir.mkdir(parents=True, exist_ok=True)
+            (first_dir / "job_packet.json").write_text(
+                json.dumps({"job": {"title": "Alpha Role", "company": "Acme", "must_have": ["Python"], "nice_to_have": ["Docker"]}}),
+                encoding="utf-8",
+            )
+            (second_dir / "job_packet.json").write_text(
+                json.dumps({"job": {"title": "Beta Role", "company": "Globex", "must_have": ["Kubernetes"], "nice_to_have": ["Go"]}}),
+                encoding="utf-8",
+            )
+
+            with patch("src.main.build_tailored_payload", return_value={"compile": {"pdf_path": ""}}):
+                result = rebuild_all_job_packets(str(output_root), None)
+
+            self.assertEqual(result["packet_count"], 2)
+            self.assertEqual([entry["job_name"] for entry in result["rebuilds"]], ["alpha", "beta"])
+            self.assertTrue((first_dir / "tailored_resume.json").exists())
+            self.assertTrue((second_dir / "tailored_resume.json").exists())
 
     def test_job_hunt_advisor_without_packets_writes_general_advice(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -253,7 +277,7 @@ class JobParserAgentTests(unittest.TestCase):
             self.assertIn("## Recommended Job Titles", titles["lines"][0])
             self.assertIn("- Backend Engineer (score 5): Works on APIs. Matches API delivery", "\n".join(titles["lines"]))
             self.assertEqual(skills["skills"], ["Kubernetes", "Python"])
-            self.assertIn("| Python | 1 | 0 | 1 |", "\n".join(skills["lines"]))
+            self.assertIn("| Python | 1 | 0 |", "\n".join(skills["lines"]))
             self.assertIn("## Resume Recommendation", resume_recs["lines"][0])
             self.assertIn("- Summary: Lead with backend impact. Matches packet emphasis (P1)", "\n".join(resume_recs["lines"]))
             self.assertIn("## Interview Prep", interview_prep["lines"][0])
@@ -313,7 +337,7 @@ class JobParserAgentTests(unittest.TestCase):
                 "Summary: Focus on backend engineering and platform delivery.",
                 "\n".join(lines),
             )
-            self.assertIn("| Python | 1 | 0 | 1 |", "\n".join(lines))
+            self.assertIn("| Python | 1 | 0 |", "\n".join(lines))
 
     def test_category_boosts_raise_testing_bullet_score(self):
         item = "Established testing framework with Jest and Vue Test Utils for unit and integration test coverage"

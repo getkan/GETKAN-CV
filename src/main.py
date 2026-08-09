@@ -174,6 +174,10 @@ def _run_single_tailor(
     compatibility_score = calculate_compatibility_score(state.get("normalized_packet", {}))
     source_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
 
+    # Embed the score in the packet so downstream consumers can read it directly.
+    if isinstance(state.get("normalized_packet"), dict):
+        state["normalized_packet"]["compatibility_score"] = compatibility_score
+
     handoff_result = handoff_to_tailor(state, output_dir=output_root)
     payload = build_tailored_payload(state["normalized_packet"], job_name=job_name, output_dir=str(output_root), model_name=resolved_tailor_model)
     payload["compatibility_score"] = compatibility_score
@@ -268,6 +272,7 @@ def rebuild_from_job_packet(
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
     compatibility_score = calculate_compatibility_score(packet_payload)
+    packet_payload["compatibility_score"] = compatibility_score
     source_log_path = append_source_log(
         effective_name,
         str(packet_path.resolve()),
@@ -295,6 +300,33 @@ def rebuild_from_job_packet(
         "compatibility_score": compatibility_score,
         "source_log": source_log_path,
         "model_name": resolved_tailor_model or "",
+    }
+
+
+def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Optional[str] = None) -> dict[str, Any]:
+    output_root = Path(output_dir) if output_dir else (Path.cwd() / "output")
+    packet_files = sorted(output_root.rglob("job_packet.json"))
+    if not packet_files:
+        raise FileNotFoundError(f"No job_packet.json files found under: {output_root}")
+
+    rebuilds: list[dict[str, Any]] = []
+    for packet_path in packet_files:
+        packet_output_dir = packet_path.parent
+        inferred_name = packet_output_dir.name if packet_path.name == "job_packet.json" else packet_path.stem
+        rebuilds.append(
+            rebuild_from_job_packet(
+                str(packet_path),
+                inferred_name,
+                str(packet_output_dir),
+                model_name,
+            )
+        )
+
+    return {
+        "mode": "rebuild-all",
+        "output_dir": str(output_root),
+        "packet_count": len(rebuilds),
+        "rebuilds": rebuilds,
     }
 
 
@@ -484,7 +516,12 @@ def main() -> int:
             return run(None, None, None, args.output_dir, None, build_basic=True)
 
         if args.command == "rebuild":
-            result = rebuild_from_job_packet(args.job_packet_file, args.job_name, args.output_dir, args.model_name)
+            if args.all:
+                result = rebuild_all_job_packets(args.output_dir, args.model_name)
+            else:
+                if not args.job_packet_file:
+                    raise ValueError("Provide a job_packet.json path or use --all")
+                result = rebuild_from_job_packet(args.job_packet_file, args.job_name, args.output_dir, args.model_name)
             print(json.dumps(result, indent=2))
             return 0
 

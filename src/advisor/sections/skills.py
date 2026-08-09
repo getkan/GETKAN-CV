@@ -49,6 +49,9 @@ def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
         return lines
 
     for row in skill_rows:
+        if row["must_haves"] == 0:
+            continue
+
         lines.append(f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} |")
     return lines
 
