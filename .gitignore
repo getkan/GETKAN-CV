@@ -32,9 +32,13 @@ resume/*
 ## Output folder
 output/
 
+## Documentation
 docs/
 
+## IDE & Environment
 .vscode/
 .github/
-log/   
+
+## Logs & Temporary files
+log/
 tmp/
