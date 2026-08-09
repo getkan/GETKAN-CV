@@ -23,13 +23,14 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 #### `src/parser/`
 
 - `agent.py`: Job extraction, fallback parsing, normalization, validation.
+- `skills.py`: Deterministic skill normalization — canonical name mappings, blocklist filters, and prefix stripping for `must_have`/`nice_to_have` lists.
 - `prompts.json`: Editable prompt templates for parser behavior.
 
 #### `src/advisor/`
 
 - `agent.py`: Cross-job analysis of saved job packets with resume-based recommendation output.
 - `prompts.json`: Editable prompt templates for advisor behavior.
-- `sections/`: Section builders for general advice, skills, job titles, resume recommendations, interview prep, ATS gaps, and portfolio suggestions.
+- `sections/`: Section builders for general advice, most compatible jobs, skills, job titles, resume recommendations, interview prep, ATS gaps, and portfolio suggestions.
 - `common.py`: Shared advisor helpers for text normalization and related advisor utilities.
 
 #### `src/tailor/`
@@ -270,11 +271,24 @@ Optional model override:
 ./tailor-resume rebuild <path_to_job_packet_json> --model <model_id>
 ```
 
+Rebuild all saved packets under the output tree:
+
+```bash
+./tailor-resume rebuild --all
+```
+
+Optional custom output root for batch rebuild:
+
+```bash
+./tailor-resume rebuild --all -o <output_dir>
+```
+
 This mode:
 
 - Skips URL/file parsing.
 - Rebuilds tailored output from the supplied packet.
 - Writes/updates `job_packet.json`, `tailored_resume.json`, and compiled PDF output in the target folder.
+- `--all` scans the output tree for `job_packet.json` files and rebuilds each one.
 
 ### 4) Generate job hunt recommendations from saved packets
 
@@ -300,6 +314,7 @@ This mode:
 - Or uses explicit files from `--job-packets` when provided.
 - Compares market demand from saved packets against your current resume modules and `skills.json`.
 - Writes `job_hunt_recommendations.md` with skills and positioning recommendations.
+- Includes a **Most Compatible Jobs** section listing the top 5 jobs by compatibility score.
 - If no packets are available, it writes general job-hunt recommendations instead of a blank/no-data message.
 
 ### 5) Show CLI help
@@ -338,6 +353,7 @@ For a run like `./tailor-resume build github-careers ...`:
 For each tailored run, a `compatibility_score` (1-10) is computed and:
 
 - printed in CLI JSON output,
+- stored in `job_packet.json`,
 - stored in `tailored_resume.json`,
 - appended to `log/source_history.jsonl`.
 
