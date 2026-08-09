@@ -11,6 +11,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from .skills import normalize_skill_items as _normalize_skill_items
+from .compatibility_score import calculate_hybrid_compatibility_score
 
 try:
     import requests
@@ -564,11 +565,20 @@ def validate_packet(state: JobParserState) -> JobParserState:
 
     return state
 
+def calculate_compatibility_score(state: JobParserState) -> JobParserState:
+    if not state.get("normalized_packet"):
+        normalize_packet(state)
+    
+    state["normalized_packet"]["compatibility_score"] = calculate_hybrid_compatibility_score(state["normalized_packet"])
+    return state
+
 
 def handoff_to_tailor(state: JobParserState, output_dir: str | Path | None = None) -> dict[str, Any]:
     if not state.get("normalized_packet"):
         normalize_packet(state)
         validate_packet(state)
+        calculate_compatibility_score(state)
+        
 
     destination = Path(output_dir or "output/tailored/default")
     destination.mkdir(parents=True, exist_ok=True)

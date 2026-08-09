@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.compatibility_score import calculate_compatibility_score
-
 
 def _job_titles_bullet_lines(rows: list[dict[str, Any]]) -> list[str]:
     lines = ["## Recommended Job Titles", ""]

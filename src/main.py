@@ -14,11 +14,10 @@ from typing import Any, Optional
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.parser.agent import JobParserState, extract_facts, fetch_or_load_listing, handoff_to_tailor, normalize_packet, validate_packet
+from src.parser.agent import JobParserState, extract_facts, fetch_or_load_listing, handoff_to_tailor, normalize_packet, validate_packet, calculate_compatibility_score
 from src.advisor.agent import generate_job_hunt_recommendations
 from src.tailor.agent import build_tailored_payload, recompile_existing_output, render_env_placeholders
 from src.cli_parser import build_parser
-from src.compatibility_score import calculate_compatibility_score
 
 
 ROLE_DEFAULT_MODELS: dict[str, str] = {
@@ -170,13 +169,10 @@ def _run_single_tailor(
     extract_facts(state)
     normalize_packet(state)
     validate_packet(state)
+    calculate_compatibility_score(state)
 
-    compatibility_score = calculate_compatibility_score(state.get("normalized_packet", {}))
+    compatibility_score = state["normalized_packet"].get("compatibility_score", 0)
     source_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
-
-    # Embed the score in the packet so downstream consumers can read it directly.
-    if isinstance(state.get("normalized_packet"), dict):
-        state["normalized_packet"]["compatibility_score"] = compatibility_score
 
     handoff_result = handoff_to_tailor(state, output_dir=output_root)
     payload = build_tailored_payload(state["normalized_packet"], job_name=job_name, output_dir=str(output_root), model_name=resolved_tailor_model)
@@ -271,7 +267,7 @@ def rebuild_from_job_packet(
     output_root.mkdir(parents=True, exist_ok=True)
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
-    compatibility_score = calculate_compatibility_score(packet_payload)
+    compatibility_score = packet_payload.get("compatibility_score", 0)
     packet_payload["compatibility_score"] = compatibility_score
     source_log_path = append_source_log(
         effective_name,
@@ -402,13 +398,14 @@ def run(
             extract_facts(staging_state)
             normalize_packet(staging_state)
             validate_packet(staging_state)
+            calculate_compatibility_score(staging_state)
 
             auto_name = _auto_job_name(staging_state.get("normalized_packet", {}), url, used_names)
             output_root = output_base / auto_name
             output_root.mkdir(parents=True, exist_ok=True)
 
-            # Reuse fully processed packet to avoid duplicate fetch/parse calls.
-            compatibility_score = calculate_compatibility_score(staging_state.get("normalized_packet", {}))
+            # Score is already embedded in the packet by normalize_packet.
+            compatibility_score = staging_state["normalized_packet"].get("compatibility_score", 0)
             source_log_path = append_source_log(auto_name, None, url, compatibility_score, model_name=resolved_tailor_model)
             handoff_result = handoff_to_tailor(staging_state, output_dir=output_root)
             payload = build_tailored_payload(staging_state["normalized_packet"], job_name=auto_name, output_dir=str(output_root), model_name=resolved_tailor_model)

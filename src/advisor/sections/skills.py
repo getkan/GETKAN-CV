@@ -47,11 +47,10 @@ def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
     if not skill_rows:
         lines.append("| None identified | 0 | 0 |")
         return lines
+    
+    filtered_rows = [row for row in skill_rows if row["must_haves"] > 0][:20]
 
-    for row in skill_rows:
-        if row["must_haves"] == 0:
-            continue
-
+    for row in filtered_rows:
         lines.append(f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} |")
     return lines
 

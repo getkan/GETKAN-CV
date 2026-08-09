@@ -8,3 +8,8 @@ RESUME_MODULE_NAMES: tuple[str, ...] = (
     "personalprojects.tex",
     "aboutme.tex",
 )
+
+# Compatibility score range that triggers an LLM adjustment pass.
+# Scores outside this range are returned as-is (no API cost).
+COMPATIBILITY_BORDERLINE_LOW: int = 3
+COMPATIBILITY_BORDERLINE_HIGH: int = 10

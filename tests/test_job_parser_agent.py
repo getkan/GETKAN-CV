@@ -23,7 +23,8 @@ from src.advisor.sections.resume_recommendation import render_resume_recommendat
 from src.advisor.sections.skills import render_recommend_skills_section
 from src.advisor.agent import _generate_recommendation_sections, generate_job_hunt_recommendations
 from src.tailor.agent import _score_item, build_allowlist, build_tailored_payload
-from src.main import calculate_compatibility_score, rebuild_all_job_packets, rebuild_from_job_packet, run
+from src.parser.compatibility_score import calculate_compatibility_score
+from src.main import rebuild_all_job_packets, rebuild_from_job_packet, run
 from src.main import clean_workspace_artifacts
 
 

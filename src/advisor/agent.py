@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.compatibility_score import calculate_compatibility_score
 from src.advisor.sections import (
     render_ats_keyword_gaps_section,
     render_general_advice_section,
@@ -18,7 +17,7 @@ from src.advisor.sections import (
     render_recommended_job_titles_section,
     render_resume_recommendation_section,
 )
-from src.config.resume_modules import RESUME_MODULE_NAMES
+from src.config.settings import RESUME_MODULE_NAMES
 
 try:
     import requests
@@ -301,7 +300,7 @@ def _parse_skill_rows_from_table_lines(lines: list[str]) -> list[dict[str, int]]
 def _compact_packets_with_scores(packets: list[dict[str, Any]]) -> list[dict[str, Any]]:
     scored_packets: list[dict[str, Any]] = []
     for payload, compact in zip(packets, _compact_job_packets(packets)):
-        scored_packets.append({**compact, "compatibility_score": calculate_compatibility_score(payload)})
+        scored_packets.append({**compact, "compatibility_score": int(payload.get("compatibility_score") or 0)})
     scored_packets.sort(key=lambda item: (-int(item.get("compatibility_score") or 0), str(item.get("title") or "").lower()))
     return scored_packets
 
