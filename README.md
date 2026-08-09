@@ -30,15 +30,13 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 - `agent.py`: Cross-job analysis of saved job packets with resume-based recommendation output.
 - `prompts.json`: Editable prompt templates for advisor behavior.
 - `sections/`: Section builders for general advice, skills, job titles, resume recommendations, interview prep, ATS gaps, and portfolio suggestions.
+- `common.py`: Shared advisor helpers for text normalization and related advisor utilities.
 
 #### `src/tailor/`
 
 - `agent.py`: Module tailoring, one-page fit profiles, artifact writing, compile logic.
 - `prompts.json`: Editable prompt templates for tailor behavior.
 
-#### `src/utils/`
-
-- `advisor_common.py`: Shared advisor helpers for prompt loading, packet compaction, and OpenRouter calls.
 
 ### `resume/`
 
