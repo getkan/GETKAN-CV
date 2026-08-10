@@ -10,6 +10,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+from .parser.compatibility_score import calculate_hybrid_compatibility_score
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -267,7 +268,12 @@ def rebuild_from_job_packet(
     output_root.mkdir(parents=True, exist_ok=True)
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
-    compatibility_score = packet_payload.get("compatibility_score", 0)
+    resolved_parser_model = _resolve_model_for_role("PARSER", model_name)
+
+    compatibility_score = calculate_hybrid_compatibility_score(
+        packet_payload.get("job", {}),
+        model_name=resolved_parser_model,
+    )
     packet_payload["compatibility_score"] = compatibility_score
     source_log_path = append_source_log(
         effective_name,
