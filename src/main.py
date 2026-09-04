@@ -148,13 +148,11 @@ def _auto_job_name(job_packet: dict[str, Any], job_url: str, used_names: set[str
 
 
 def _run_single_tailor(
-    job_name: str,
     file_path: Optional[str],
     job_url: Optional[str],
-    output_root: Path,
+    output_dir: Optional[str],
     model_name: Optional[str],
 ) -> dict[str, Any]:
-    output_root.mkdir(parents=True, exist_ok=True)
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
 
     listing_text = load_listing_from_file(file_path)
@@ -171,6 +169,10 @@ def _run_single_tailor(
     normalize_packet(state)
     validate_packet(state)
     calculate_compatibility_score(state)
+
+    job_name = _auto_job_name(state.get("normalized_packet", {}), job_url or file_path or "", set())
+    output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / job_name)
+    output_root.mkdir(parents=True, exist_ok=True)
 
     compatibility_score = state["normalized_packet"].get("compatibility_score", 0)
     source_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
@@ -244,11 +246,32 @@ def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
     }
 
 
+def _refresh_packet_from_source(packet_payload: dict[str, Any], job_packet_file: str) -> dict[str, Any]:
+    metadata = packet_payload.get("metadata") if isinstance(packet_payload.get("metadata"), dict) else {}
+    source_url = str(metadata.get("source_url") or "").strip()
+    if not source_url:
+        raise ValueError(f"Job packet has no metadata.source_url to rebuild from: {job_packet_file}")
+
+    state: JobParserState = {
+        "source": {"job_url": source_url, "listing_text": ""},
+        "raw_listing_text": "",
+        "extracted_facts": {},
+        "normalized_packet": {},
+        "confidence": 0.0,
+    }
+    fetch_or_load_listing(state)
+    extract_facts(state)
+    normalize_packet(state)
+    validate_packet(state)
+    calculate_compatibility_score(state)
+    return state["normalized_packet"]
+
+
 def rebuild_from_job_packet(
     job_packet_file: str,
-    job_name: Optional[str],
     output_dir: Optional[str],
     model_name: Optional[str],
+    force: bool = False,
 ) -> dict[str, Any]:
     packet_path = Path(job_packet_file)
     if not packet_path.exists() or not packet_path.is_file():
@@ -262,29 +285,41 @@ def rebuild_from_job_packet(
     if not isinstance(packet_payload, dict) or not isinstance(packet_payload.get("job"), dict):
         raise ValueError("Job packet must be a JSON object with a top-level 'job' object")
 
+    source_url: Optional[str] = None
+    if force:
+        metadata = packet_payload.get("metadata") if isinstance(packet_payload.get("metadata"), dict) else {}
+        source_url = str(metadata.get("source_url") or "").strip() or None
+        packet_payload = _refresh_packet_from_source(packet_payload, job_packet_file)
+
     inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
-    effective_name = _slugify(job_name or inferred_name)
+    effective_name = _slugify(inferred_name)
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / effective_name)
     output_root.mkdir(parents=True, exist_ok=True)
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
     resolved_parser_model = _resolve_model_for_role("PARSER", model_name)
 
-    compatibility_score = calculate_hybrid_compatibility_score(
-        packet_payload.get("job", {}),
-        model_name=resolved_parser_model,
-    )
+    if force:
+        compatibility_score = packet_payload.get("compatibility_score", 0)
+    else:
+        compatibility_score = calculate_hybrid_compatibility_score(
+            packet_payload.get("job", {}),
+            model_name=resolved_parser_model,
+        )
     packet_payload["compatibility_score"] = compatibility_score
     source_log_path = append_source_log(
         effective_name,
-        str(packet_path.resolve()),
-        None,
+        None if force else str(packet_path.resolve()),
+        source_url,
         compatibility_score,
         model_name=resolved_tailor_model,
     )
 
     output_packet_path = output_root / "job_packet.json"
-    output_packet_path.write_text(json.dumps(packet_payload, indent=2), encoding="utf-8")
+    serialized_packet = json.dumps(packet_payload, indent=2)
+    output_packet_path.write_text(serialized_packet, encoding="utf-8")
+    if force and output_packet_path.resolve() != packet_path.resolve():
+        packet_path.write_text(serialized_packet, encoding="utf-8")
 
     payload = build_tailored_payload(packet_payload, job_name=effective_name, output_dir=str(output_root), model_name=resolved_tailor_model)
     payload["compatibility_score"] = compatibility_score
@@ -302,10 +337,12 @@ def rebuild_from_job_packet(
         "compatibility_score": compatibility_score,
         "source_log": source_log_path,
         "model_name": resolved_tailor_model or "",
+        "forced": bool(force),
+        "source_url": source_url or "",
     }
 
 
-def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Optional[str] = None) -> dict[str, Any]:
+def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Optional[str] = None, force: bool = False) -> dict[str, Any]:
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output")
     packet_files = sorted(output_root.rglob("job_packet.json"))
     if not packet_files:
@@ -314,13 +351,12 @@ def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Option
     rebuilds: list[dict[str, Any]] = []
     for packet_path in packet_files:
         packet_output_dir = packet_path.parent
-        inferred_name = packet_output_dir.name if packet_path.name == "job_packet.json" else packet_path.stem
         rebuilds.append(
             rebuild_from_job_packet(
                 str(packet_path),
-                inferred_name,
                 str(packet_output_dir),
                 model_name,
+                force,
             )
         )
 
@@ -333,7 +369,6 @@ def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Option
 
 
 def run(
-    job_name: Optional[str],
     file_path: Optional[str],
     job_url: Optional[str],
     output_dir: Optional[str],
@@ -377,8 +412,6 @@ def run(
         return 0
 
     if url_list_file:
-        if job_name:
-            raise ValueError("Do not provide job_name when using -l/--url-list-file")
         if file_path:
             raise ValueError("-f/--file is not supported with -l/--url-list-file")
         if job_url:
@@ -445,20 +478,17 @@ def run(
         )
         return 0
 
-    if not job_name:
-        raise ValueError("Provide job_name for single-run builds")
-
-    default_output_root = Path.cwd() / "output" / job_name
-    output_root = Path(output_dir or str(default_output_root))
-    output_root.mkdir(parents=True, exist_ok=True)
-
     if recompile_existing:
+        if not output_dir:
+            raise ValueError("Provide -o/--output for recompile runs")
+        output_root = Path(output_dir)
+        output_root.mkdir(parents=True, exist_ok=True)
         recompile_result = recompile_existing_output(output_root)
         compile_payload = recompile_result.get("compile", {})
         print(
             json.dumps(
                 {
-                    "job_name": job_name,
+                    "job_name": output_root.name,
                     "output_dir": str(output_root),
                     "summary": recompile_result.get("summary", ""),
                     "pdf": compile_payload.get("pdf_path", ""),
@@ -473,7 +503,7 @@ def run(
     if not file_path and not job_url:
         raise ValueError("Provide either -f/--file or -u/--url")
 
-    result = _run_single_tailor(job_name, file_path, job_url, output_root, model_name)
+    result = _run_single_tailor(file_path, job_url, output_dir, model_name)
     print(
         json.dumps(result, indent=2)
     )
@@ -503,7 +533,6 @@ def main() -> int:
 
         if args.command == "build":
             return run(
-                args.job_name,
                 args.file_path,
                 args.job_url,
                 args.output_dir,
@@ -516,21 +545,20 @@ def main() -> int:
             )
 
         if args.command == "build-base":
-            return run(None, None, None, args.output_dir, None, build_basic=True)
+            return run(None, None, args.output_dir, None, build_basic=True)
 
         if args.command == "rebuild":
             if args.all:
-                result = rebuild_all_job_packets(args.output_dir, args.model_name)
+                result = rebuild_all_job_packets(args.output_dir, args.model_name, args.force)
             else:
                 if not args.job_packet_file:
                     raise ValueError("Provide a job_packet.json path or use --all")
-                result = rebuild_from_job_packet(args.job_packet_file, args.job_name, args.output_dir, args.model_name)
+                result = rebuild_from_job_packet(args.job_packet_file, args.output_dir, args.model_name, args.force)
             print(json.dumps(result, indent=2))
             return 0
 
         if args.command == "advice":
             return run(
-                None,
                 None,
                 None,
                 args.output_dir,

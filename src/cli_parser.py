@@ -13,7 +13,6 @@ def build_parser() -> argparse.ArgumentParser:
         "build",
         help="Build tailored resume output from a URL, local listing file, or URL list file",
     )
-    build.add_argument("job_name", nargs="?", help="Short name for a single tailored resume run")
     build.add_argument("-f", "--file", dest="file_path", help="Path to a listing file for a single run")
     build.add_argument("-u", "--url", dest="job_url", help="Job listing URL for a single run")
     build.add_argument(
@@ -38,8 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Rebuild tailored output from an existing job_packet.json",
     )
     rebuild.add_argument("job_packet_file", nargs="?", help="Path to a job_packet.json file")
-    rebuild.add_argument("--job-name", dest="job_name", help="Optional explicit job name for output naming")
     rebuild.add_argument("--all", action="store_true", help="Rebuild all job_packet.json files found under the output directory")
+    rebuild.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Re-fetch and re-parse the listing from the packet's metadata.source_url, replacing the packet contents",
+    )
     rebuild.add_argument("-o", "--output", dest="output_dir", help="Output directory for generated artifacts")
     rebuild.add_argument("--model", dest="model_name", help="Optional OpenRouter model override")
 

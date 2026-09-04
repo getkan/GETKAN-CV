@@ -10,7 +10,7 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 - Tailors selected resume modules (`summary.tex`, `experience.tex`, `personalprojects.tex`, `aboutme.tex`).
 - Writes generated artifacts to a dedicated output folder.
 - Compiles a LaTeX PDF using `xelatex`.
-- Supports rebuilding tailored outputs directly from a manually edited `job_packet.json`.
+- Supports rebuilding tailored outputs directly from a manually edited `job_packet.json`, or forcing a fresh parse from the packet's source URL.
 
 ## Project Structure
 
@@ -180,27 +180,27 @@ To customize personal project order, include it directly inside `personalproject
 
 ### 1) Build tailored resume outputs
 
-Use `build` for single URL, single file, or URL-list batch workflows.
+Use `build` for single URL, single file, or URL-list batch workflows. Job names are always derived automatically from the parsed company and title.
 
 Build from URL:
 
 ```bash
-./tailor-resume build <job_name> -u <job_url>
+./tailor-resume build -u <job_url>
 ```
 
 Example:
 
 ```bash
-./tailor-resume build github-careers -u "https://www.github.careers/careers-home/jobs/5682?lang=en-us"
+./tailor-resume build -u "https://www.github.careers/careers-home/jobs/5682?lang=en-us"
 ```
 
 Build from local listing file:
 
 ```bash
-./tailor-resume build <job_name> -f <path_to_listing_text_or_html>
+./tailor-resume build -f <path_to_listing_text_or_html>
 ```
 
-Batch build from URL list file (auto job names):
+Batch build from URL list file:
 
 ```bash
 ./tailor-resume build -l <path_to_url_list_file>
@@ -215,13 +215,13 @@ Optional custom output root for batch runs:
 Set custom output directory for a single run:
 
 ```bash
-./tailor-resume build <job_name> -u <job_url> -o <output_dir>
+./tailor-resume build -u <job_url> -o <output_dir>
 ```
 
 Override model (optional):
 
 ```bash
-./tailor-resume build <job_name> -u <job_url> --model <model_id>
+./tailor-resume build -u <job_url> --model <model_id>
 ```
 
 If `-o` is omitted for single-run build, default output is:
@@ -231,7 +231,7 @@ output/<job_name>
 ```
 
 The URL list file should contain one URL per line (blank lines and lines starting with `#` are ignored).
-Batch mode auto-generates unique job names from parsed company/title and writes each run to its own output folder.
+Job names are generated from parsed company/title (falling back to the URL), de-duplicated with a numeric suffix, and each run writes to its own output folder.
 
 ### 2) Build base resume (no tailoring)
 
@@ -259,10 +259,10 @@ Use this when you manually edit a `job_packet.json` and want regenerated tailore
 ./tailor-resume rebuild <path_to_job_packet_json>
 ```
 
-Optional explicit job name and output directory:
+Optional output directory (the job name is taken from the packet's folder name):
 
 ```bash
-./tailor-resume rebuild <path_to_job_packet_json> --job-name <job_name> -o <output_dir>
+./tailor-resume rebuild <path_to_job_packet_json> -o <output_dir>
 ```
 
 Optional model override:
@@ -283,12 +283,20 @@ Optional custom output root for batch rebuild:
 ./tailor-resume rebuild --all -o <output_dir>
 ```
 
+Force a fresh parse from the packet's `metadata.source_url`:
+
+```bash
+./tailor-resume rebuild <path_to_job_packet_json> -f
+./tailor-resume rebuild --all --force
+```
+
 This mode:
 
 - Skips URL/file parsing.
 - Rebuilds tailored output from the supplied packet.
 - Writes/updates `job_packet.json`, `tailored_resume.json`, and compiled PDF output in the target folder.
 - `--all` scans the output tree for `job_packet.json` files and rebuilds each one.
+- `-f/--force` re-fetches and re-parses the listing from `metadata.source_url` and replaces the existing packet contents. It fails when the packet has no `metadata.source_url`.
 
 ### 4) Generate job hunt recommendations from saved packets
 
@@ -333,15 +341,23 @@ This removes the contents of `output/` and `log/` and recreates both directories
 
 ## Test Commands
 
-Run the current unit test suite:
+Run the full unit test suite:
 
 ```bash
-python -m unittest -q tests.test_job_parser_agent
+python -m unittest -q tests.test_parser_agent tests.test_advisor_agent tests.test_tailor_agent
+```
+
+Run a single area:
+
+```bash
+python -m unittest -q tests.test_parser_agent
+python -m unittest -q tests.test_advisor_agent
+python -m unittest -q tests.test_tailor_agent
 ```
 
 ## Generated Output Layout
 
-For a run like `./tailor-resume build github-careers ...`:
+For a run like `./tailor-resume build -u <job_url>`:
 
 - `output/github-careers/job_packet.json`: Parsed and normalized job data.
 - `output/github-careers/tailored_resume.json`: Tailoring payload + compile metadata.
@@ -363,6 +379,7 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 2. Inspect generated modules in `output/<job_name>/resume/modules`.
 3. Optionally edit `job_packet.json` or generated module files.
 4. Run `rebuild` with the packet path to regenerate outputs.
+5. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
 
 For a non-tailored base resume build, use `build-base`.
 
