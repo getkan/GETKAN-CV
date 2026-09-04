@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import argparse
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -297,7 +297,11 @@ def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
         if result.stderr:
             logs.append(result.stderr[-1200:])
         if result.returncode != 0:
-            raise RuntimeError("Basic resume compile failed")
+            tail = (result.stdout or "")[-1200:] or (result.stderr or "")[-1200:]
+            raise RuntimeError(
+                f"Basic resume compile failed on pass {pass_index + 1} "
+                f"(exit={result.returncode}):\n{tail}"
+            )
 
     compiled_pdf = resume_output_root / "resume.pdf"
     pdf_path = destination / "resume.pdf"
@@ -559,6 +563,9 @@ def run(
                     "success_log": success_log_path,
                 }
             )
+
+            #Sleep for a second to work around rate limits
+            time.sleep(1)
 
         failed_count = sum(1 for entry in batch_results if entry.get("mode") == "failed")
         print(

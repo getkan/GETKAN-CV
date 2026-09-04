@@ -42,7 +42,6 @@ docs/
 ## Logs & Temporary files
 log/
 tmp/
-jobs/
 
 ## Python
 **/__pycache__
