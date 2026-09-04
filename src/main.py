@@ -74,10 +74,17 @@ def _resolve_model_for_role(role: str, cli_override: Optional[str]) -> Optional[
     return os.getenv(role_key) or os.getenv("OPENROUTER_MODEL") or ROLE_DEFAULT_MODELS.get(role.upper())
 
 
-def append_source_log(job_name: str, file_path: Optional[str], job_url: Optional[str], compatibility_score: int, model_name: Optional[str] = None) -> str:
+def append_source_log(
+    job_name: str,
+    file_path: Optional[str],
+    job_url: Optional[str],
+    compatibility_score: int,
+    model_name: Optional[str] = None,
+    validation_errors: Optional[list[str]] = None,
+) -> str:
     log_dir = Path.cwd() / "log"
     log_dir.mkdir(parents=True, exist_ok=True)
-    log_path = log_dir / "source_history.jsonl"
+    log_path = log_dir / ("failed_history.jsonl" if validation_errors else "success_history.jsonl")
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "job_name": job_name,
@@ -86,9 +93,55 @@ def append_source_log(job_name: str, file_path: Optional[str], job_url: Optional
         "compatibility_score": compatibility_score,
         "model_name": model_name or "",
     }
+    if validation_errors:
+        entry["validation_errors"] = validation_errors
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry) + "\n")
     return str(log_path)
+
+
+def _validation_errors(job_packet: dict[str, Any]) -> list[str]:
+    metadata = job_packet.get("metadata") if isinstance(job_packet, dict) else None
+    errors = metadata.get("validation_errors") if isinstance(metadata, dict) else None
+    return [str(error) for error in errors] if isinstance(errors, list) else []
+
+
+def _record_failed_packet(
+    job_packet: dict[str, Any],
+    job_name: str,
+    file_path: Optional[str],
+    job_url: Optional[str],
+    output_base: Path,
+    model_name: Optional[str],
+) -> dict[str, Any]:
+    errors = _validation_errors(job_packet)
+    failed_root = output_base / "failed"
+    failed_dir = failed_root / job_name
+    failed_dir.mkdir(parents=True, exist_ok=True)
+
+    packet_path = failed_dir / "job_packet.json"
+    packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
+
+    source = job_url or (str(Path(file_path).resolve()) if file_path else "")
+    failed_list_path = failed_root / "failed.txt"
+    if source:
+        existing = failed_list_path.read_text(encoding="utf-8").splitlines() if failed_list_path.exists() else []
+        if source not in existing:
+            with failed_list_path.open("a", encoding="utf-8") as handle:
+                handle.write(source + "\n")
+
+    failed_log_path = append_source_log(job_name, file_path, job_url, 0, model_name=model_name, validation_errors=errors)
+
+    return {
+        "mode": "failed",
+        "job_name": job_name,
+        "url": job_url or "",
+        "output_dir": str(failed_dir),
+        "job_packet": str(packet_path),
+        "failed_list": str(failed_list_path),
+        "validation_errors": errors,
+        "failed_log": failed_log_path,
+    }
 
 
 def _clear_directory_contents(directory: Path) -> None:
@@ -171,11 +224,22 @@ def _run_single_tailor(
     calculate_compatibility_score(state)
 
     job_name = _auto_job_name(state.get("normalized_packet", {}), job_url or file_path or "", set())
-    output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / job_name)
+    output_base = Path(output_dir).parent if output_dir else (Path.cwd() / "output")
+    if _validation_errors(state.get("normalized_packet", {})):
+        return _record_failed_packet(
+            state["normalized_packet"],
+            job_name,
+            file_path,
+            job_url,
+            output_base,
+            resolved_tailor_model,
+        )
+
+    output_root = Path(output_dir) if output_dir else (output_base / job_name)
     output_root.mkdir(parents=True, exist_ok=True)
 
     compatibility_score = state["normalized_packet"].get("compatibility_score", 0)
-    source_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
+    success_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
 
     handoff_result = handoff_to_tailor(state, output_dir=output_root)
     payload = build_tailored_payload(state["normalized_packet"], job_name=job_name, output_dir=str(output_root), model_name=resolved_tailor_model)
@@ -191,7 +255,7 @@ def _run_single_tailor(
         "summary": str(summary_path),
         "pdf": payload.get("compile", {}).get("pdf_path", ""),
         "compatibility_score": compatibility_score,
-        "source_log": source_log_path,
+        "success_log": success_log_path,
     }
 
 
@@ -294,10 +358,27 @@ def rebuild_from_job_packet(
     inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
     effective_name = _slugify(inferred_name)
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / effective_name)
-    output_root.mkdir(parents=True, exist_ok=True)
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
     resolved_parser_model = _resolve_model_for_role("PARSER", model_name)
+
+    if _validation_errors(packet_payload):
+        failure = _record_failed_packet(
+            packet_payload,
+            effective_name,
+            None if force else str(packet_path.resolve()),
+            source_url,
+            output_root.parent,
+            resolved_tailor_model,
+        )
+        failure["job_packet_file"] = str(packet_path.resolve())
+        failure["forced"] = bool(force)
+        # The previously generated output is regenerable, so drop it rather than leave stale artifacts.
+        if output_root.exists():
+            shutil.rmtree(output_root)
+        return failure
+
+    output_root.mkdir(parents=True, exist_ok=True)
 
     if force:
         compatibility_score = packet_payload.get("compatibility_score", 0)
@@ -307,7 +388,7 @@ def rebuild_from_job_packet(
             model_name=resolved_parser_model,
         )
     packet_payload["compatibility_score"] = compatibility_score
-    source_log_path = append_source_log(
+    success_log_path = append_source_log(
         effective_name,
         None if force else str(packet_path.resolve()),
         source_url,
@@ -335,7 +416,7 @@ def rebuild_from_job_packet(
         "summary": str(summary_path),
         "pdf": payload.get("compile", {}).get("pdf_path", ""),
         "compatibility_score": compatibility_score,
-        "source_log": source_log_path,
+        "success_log": success_log_path,
         "model_name": resolved_tailor_model or "",
         "forced": bool(force),
         "source_url": source_url or "",
@@ -344,7 +425,7 @@ def rebuild_from_job_packet(
 
 def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Optional[str] = None, force: bool = False) -> dict[str, Any]:
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output")
-    packet_files = sorted(output_root.rglob("job_packet.json"))
+    packet_files = sorted(p for p in output_root.rglob("job_packet.json") if "failed" not in p.relative_to(output_root).parts)
     if not packet_files:
         raise FileNotFoundError(f"No job_packet.json files found under: {output_root}")
 
@@ -364,6 +445,7 @@ def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Option
         "mode": "rebuild-all",
         "output_dir": str(output_root),
         "packet_count": len(rebuilds),
+        "failed_count": sum(1 for entry in rebuilds if entry.get("mode") == "failed"),
         "rebuilds": rebuilds,
     }
 
@@ -440,12 +522,25 @@ def run(
             calculate_compatibility_score(staging_state)
 
             auto_name = _auto_job_name(staging_state.get("normalized_packet", {}), url, used_names)
+            if _validation_errors(staging_state.get("normalized_packet", {})):
+                batch_results.append(
+                    _record_failed_packet(
+                        staging_state["normalized_packet"],
+                        auto_name,
+                        None,
+                        url,
+                        output_base,
+                        resolved_tailor_model,
+                    )
+                )
+                continue
+
             output_root = output_base / auto_name
             output_root.mkdir(parents=True, exist_ok=True)
 
             # Score is already embedded in the packet by normalize_packet.
             compatibility_score = staging_state["normalized_packet"].get("compatibility_score", 0)
-            source_log_path = append_source_log(auto_name, None, url, compatibility_score, model_name=resolved_tailor_model)
+            success_log_path = append_source_log(auto_name, None, url, compatibility_score, model_name=resolved_tailor_model)
             handoff_result = handoff_to_tailor(staging_state, output_dir=output_root)
             payload = build_tailored_payload(staging_state["normalized_packet"], job_name=auto_name, output_dir=str(output_root), model_name=resolved_tailor_model)
             payload["compatibility_score"] = compatibility_score
@@ -461,16 +556,18 @@ def run(
                     "summary": str(summary_path),
                     "pdf": payload.get("compile", {}).get("pdf_path", ""),
                     "compatibility_score": compatibility_score,
-                    "source_log": source_log_path,
+                    "success_log": success_log_path,
                 }
             )
 
+        failed_count = sum(1 for entry in batch_results if entry.get("mode") == "failed")
         print(
             json.dumps(
                 {
                     "mode": "batch-urls",
                     "url_list_file": str(Path(url_list_file).resolve()),
                     "count": len(batch_results),
+                    "failed_count": failed_count,
                     "runs": batch_results,
                 },
                 indent=2,

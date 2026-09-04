@@ -364,14 +364,26 @@ For a run like `./tailor-resume build -u <job_url>`:
 - `output/github-careers/resume/resume.tex`: Compilable resume root.
 - `output/github-careers/resume/modules/*.tex`: Tailored module files.
 - `output/github-careers/github-careers.pdf`: Final PDF output.
-- `log/source_history.jsonl`: Append-only history of previously used URL/file inputs with timestamps.
+- `log/success_history.jsonl`: Append-only history of successful runs with timestamps.
+- `log/failed_history.jsonl`: Append-only history of failed parses with their validation errors.
+
+### Failed Parses
+
+When a parse produces validation errors, no tailored output is generated:
+
+- The job packet is written to `output/failed/<job_name>/job_packet.json` and nothing else.
+- The source URL (or file path) is appended to `output/failed/failed.txt`.
+- The run is logged to `log/failed_history.jsonl` only, never to `log/success_history.jsonl`.
+- The tailor and PDF compile steps are skipped, and the CLI result reports `"mode": "failed"`.
+- A `rebuild` of a packet that fails validation removes its regenerable output folder and moves the packet to `output/failed/`.
+- `rebuild --all` and `advice` skip everything under `output/failed/`.
 
 For each tailored run, a `compatibility_score` (1-10) is computed and:
 
 - printed in CLI JSON output,
 - stored in `job_packet.json`,
 - stored in `tailored_resume.json`,
-- appended to `log/source_history.jsonl`.
+- appended to `log/success_history.jsonl`.
 
 ## Typical Workflow
 

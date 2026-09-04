@@ -114,6 +114,8 @@ def _is_skill_candidate(value: str) -> bool:
 def _collect_job_packets(output_root: Path) -> list[dict[str, Any]]:
     packets: list[dict[str, Any]] = []
     for packet_path in sorted(output_root.rglob("job_packet.json")):
+        if "failed" in packet_path.relative_to(output_root).parts:
+            continue
         try:
             payload = json.loads(packet_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):

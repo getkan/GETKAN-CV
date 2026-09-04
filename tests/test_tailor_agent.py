@@ -115,8 +115,47 @@ class TailorAgentTests(unittest.TestCase):
                 os.chdir(previous_cwd)
 
             self.assertEqual(exit_code, 0)
-            log_path = Path(tmpdir) / "log" / "source_history.jsonl"
+            log_path = Path(tmpdir) / "log" / "success_history.jsonl"
             self.assertTrue(log_path.exists())
+
+    def test_run_writes_failed_output_when_validation_fails(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            listing_path = Path(tmpdir) / "listing.txt"
+            listing_path.write_text("Example listing", encoding="utf-8")
+
+            previous_cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                def normalize_side_effect(state):
+                    state["normalized_packet"] = {
+                        "job": {"company": "", "title": ""},
+                        "metadata": {
+                            "source_url": "https://example.com/jobs/1",
+                            "validation_errors": ["Missing job title", "Missing company"],
+                        },
+                    }
+
+                with patch("src.main.fetch_or_load_listing"), patch("src.main.extract_facts"), patch(
+                    "src.main.normalize_packet", side_effect=normalize_side_effect
+                ), patch("src.main.validate_packet"), patch("src.main.handoff_to_tailor") as handoff_mock, patch(
+                    "src.main.build_tailored_payload"
+                ) as payload_mock:
+                    exit_code = run(str(listing_path), "https://example.com/jobs/1", None, None)
+            finally:
+                os.chdir(previous_cwd)
+
+            self.assertEqual(exit_code, 0)
+            handoff_mock.assert_not_called()
+            payload_mock.assert_not_called()
+
+            failed_root = Path(tmpdir) / "output" / "failed"
+            self.assertTrue((failed_root / "1" / "job_packet.json").exists())
+            self.assertEqual(
+                (failed_root / "failed.txt").read_text(encoding="utf-8").strip(),
+                "https://example.com/jobs/1",
+            )
+            self.assertTrue((Path(tmpdir) / "log" / "failed_history.jsonl").exists())
+            self.assertFalse((Path(tmpdir) / "log" / "success_history.jsonl").exists())
 
     def test_run_batch_urls_from_file_auto_generates_job_names(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -172,7 +211,7 @@ class TailorAgentTests(unittest.TestCase):
                 self.assertEqual(handoff_mock.call_count, 2)
                 self.assertEqual(payload_mock.call_count, 2)
 
-                log_path = Path(tmpdir) / "log" / "source_history.jsonl"
+                log_path = Path(tmpdir) / "log" / "success_history.jsonl"
                 self.assertTrue(log_path.exists())
                 entries = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines() if line.strip()]
                 self.assertGreaterEqual(len(entries), 2)
@@ -290,8 +329,8 @@ class TailorAgentTests(unittest.TestCase):
             log_dir = Path(tmpdir) / "log"
             (output_dir / "sample" / "nested").mkdir(parents=True, exist_ok=True)
             (output_dir / "sample" / "nested" / "file.txt").write_text("data", encoding="utf-8")
-            (log_dir / "source_history.jsonl").parent.mkdir(parents=True, exist_ok=True)
-            (log_dir / "source_history.jsonl").write_text("entry", encoding="utf-8")
+            (log_dir / "success_history.jsonl").parent.mkdir(parents=True, exist_ok=True)
+            (log_dir / "success_history.jsonl").write_text("entry", encoding="utf-8")
 
             result = clean_workspace_artifacts(output_root=str(output_dir), log_root=str(log_dir))
 
