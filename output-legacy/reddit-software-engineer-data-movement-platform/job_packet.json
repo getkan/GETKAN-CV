@@ -1,0 +1,42 @@
+{
+  "job": {
+    "title": "Software Engineer - Data Movement Platform",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information.",
+    "must_have": [
+      "maintainable",
+      "well-tested code",
+      "Scala",
+      "Go",
+      "Java",
+      "implementing large-scale systems",
+      "cloud services",
+      "Airflow",
+      "Kubernetes",
+      "CI/CD",
+      "Spark",
+      "Flink"
+    ],
+    "nice_to_have": [
+      "the broader organizational context"
+    ],
+    "responsibilities": [
+      "Refine and maintain our data infrastructure technologies to support ML and analytics workflows on data collected from hundreds of millions of users.",
+      "Own the Data Movement Platform used to enable batch and stream data processing at Reddit.",
+      "Invest in building new infrastructure for Spark, Flink, and Airflow technologies at Reddit, including contributing to the open source community as needed.",
+      "Build automated solutions to minimize toilsome work for data users at Reddit and provide a declarative, self-service experience for working with data.",
+      "Collaborate with teammates to share on-call responsibilities and support monitoring/alerting to improve the reliability, scalability, latency, and efficiency of Reddit\u2019s Data Platform."
+    ],
+    "domain": "Data Engineering"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/7997866",
+    "parsed_at": "2026-09-04T16:52:01.152621+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

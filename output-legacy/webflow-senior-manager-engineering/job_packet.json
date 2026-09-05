@@ -1,0 +1,41 @@
+{
+  "job": {
+    "title": "Senior Manager, Engineering",
+    "company": "Webflow",
+    "location": "Remote (United States)",
+    "employment_type": "Full Time",
+    "description": "Leads the engineering team building Webflow\u2019s code-native platform, including high-fidelity visual-to-code workflows and coding-agent integration. This player-coach role includes architecture reviews, prototyping, hands-on contributions, hiring, coaching, and developing a high-performing technical culture.",
+    "must_have": [
+      "BA",
+      "code generation",
+      "language tooling",
+      "IDEs",
+      "developer infrastructure",
+      "agentic systems",
+      "team development"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI"
+    ],
+    "responsibilities": [
+      "Set the technical and product direction for Webflow code-native",
+      "Lead the integration of coding agents into the building experience",
+      "Own the developer experience of working with Webflow in code",
+      "Turn an emerging problem space into a coherent roadmap",
+      "Partner closely with product, design, and engineering teams",
+      "Stay technically engaged through architecture, design reviews, and hands-on contributions",
+      "Hire, coach, and develop engineers while building a high-performing technical culture"
+    ],
+    "domain": "Engineering"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-manager-engineering/10798940",
+    "parsed_at": "2026-09-04T15:30:22.948038+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,37 @@
+{
+  "job": {
+    "title": "Fullstack Software Engineer, Notifications Lifecycle",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "As a full-stack engineer on the Notifications team, you\u2019ll design, build and scale products within our notifications system, with a focus on the end user experience. You\u2019ll have an opportunity to work across the stack and with cross-functional teams such as Product, Machine Learning and Data Science. Your work will directly impact hundreds of millions of users around the world.",
+    "must_have": [
+      "backend service code",
+      "Unit Testing",
+      "other automated testing",
+      "code with resiliency",
+      "fault tolerance in mind"
+    ],
+    "nice_to_have": [
+      "written",
+      "engineering culture improvements"
+    ],
+    "responsibilities": [
+      "Designing, developing, and maintaining backend services that handle notifications and emails while ensuring the performance, security, and scalability of our systems.",
+      "Designing, developing, and maintaining high quality, performant frontend features.",
+      "Contributing to the full development cycle: technical design, development, test, experimentation, analysis, and launch.",
+      "Writing design docs and code, and getting valuable feedback on your work.",
+      "Working collaboratively with product managers, designers, data scientists and other engineers to deliver high-quality products.",
+      "Contributing to the infrastructure that supports all of the above."
+    ],
+    "domain": "Software Engineering"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/7895468",
+    "parsed_at": "2026-09-04T16:51:05.275496+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

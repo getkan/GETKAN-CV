@@ -1,0 +1,41 @@
+{
+  "job": {
+    "title": "Engineering Manager, Core",
+    "company": "Fieldguide",
+    "location": "Remote, USA",
+    "employment_type": "Senior Level",
+    "description": "Lead a full-stack engineering team for core Enterprise product development, balancing management with technical contributions in a remote-first setting.",
+    "must_have": [
+      "Experienced engineering leader",
+      "a management",
+      "technical contributor role",
+      "Able to code",
+      "guide implementation",
+      "TypeScript",
+      "PostgreSQL",
+      "Hasura",
+      "coach",
+      "operator"
+    ],
+    "nice_to_have": [
+      "audit",
+      "compliance domains"
+    ],
+    "responsibilities": [
+      "Lead a full-stack engineering team focused on core Enterprise product development",
+      "Manage and support engineers while executing across multiple workstreams",
+      "Stay close to the code and contribute to architectural decisions",
+      "Drive strong engineering execution across product requests and long-term initiatives",
+      "Bring an AI-native mindset to the team"
+    ],
+    "domain": "Artificial Intelligence, Software"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/engineering-manager-core/9431059",
+    "parsed_at": "2026-09-04T15:49:57.837381+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

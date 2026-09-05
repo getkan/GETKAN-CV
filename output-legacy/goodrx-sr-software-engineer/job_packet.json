@@ -1,0 +1,51 @@
+{
+  "job": {
+    "title": "Sr. Software Engineer",
+    "company": "GoodRx",
+    "location": "Austin, USA",
+    "employment_type": "Remote Or Hybrid",
+    "description": "GoodRx is the leading prescription savings platform in the U.S. Trusted by more than 25 million consumers and 750,000 healthcare professionals annually, GoodRx provides access to savings and affordability options for generic and brand-name medications at more than 70,000 pharmacies nationwide, as well as comprehensive healthcare research and information.",
+    "must_have": [
+      "TypeScript",
+      "state management patterns Context",
+      "Redux",
+      "performance optimization",
+      "accessibility a11y",
+      "web standards",
+      "integrate 3rd party SDKs",
+      "APIs",
+      "Excellent verbal",
+      "scalability",
+      "reliability are critical considerations"
+    ],
+    "nice_to_have": [
+      "modern observability",
+      "Sentry",
+      "NewRelic",
+      "Experience contributing to full-stack",
+      "mobile"
+    ],
+    "responsibilities": [
+      "Utilize frontend skills to solve complex customer experience problems across multiple surfaces and user journeys",
+      "Collaborate with web developers to design and evolve frontend frameworks, components, and services",
+      "Design and implement scalable frontend architecture and patterns that are stable, flexible, and a pleasure to use",
+      "Define and influence coding standards and best practices",
+      "Improve and maintain CI/CD pipelines and frontend developer workflows",
+      "Write unit tests for new features, and improve coverage for existing ones",
+      "Create and participate in code reviews",
+      "Evaluate and introduce new technologies and frameworks",
+      "Independently lead development of complex features from concept through launch",
+      "Collaborate with Backend engineers to design APIs that can support frontend features",
+      "Mentor and support the growth of other engineers"
+    ],
+    "domain": "Healthtech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/sr-software-engineer/10438193",
+    "parsed_at": "2026-09-04T15:47:19.392822+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

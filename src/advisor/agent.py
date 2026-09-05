@@ -18,13 +18,14 @@ from src.advisor.sections import (
     render_resume_recommendation_section,
 )
 from src.config.settings import RESUME_MODULE_NAMES
+from src.infrastructure.prompt_config import load_prompt_config
 
 try:
     import requests
 except ImportError:  # pragma: no cover
     requests = None
 
-PROMPT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "prompts" / "advisor" / "prompts.json"
+PROMPT_CONFIG_PATH = Path(__file__).with_name("prompts.json")
 
 SKILL_STOPWORDS = {
     "experience",
@@ -72,25 +73,7 @@ DEFAULT_ADVISOR_PROMPTS: dict[str, str] = {
 
 
 def _load_advisor_prompts() -> dict[str, str]:
-    prompts = dict(DEFAULT_ADVISOR_PROMPTS)
-    if not PROMPT_CONFIG_PATH.exists():
-        return prompts
-
-    try:
-        payload = json.loads(PROMPT_CONFIG_PATH.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return prompts
-
-    if not isinstance(payload, dict):
-        return prompts
-
-    for key, default_value in DEFAULT_ADVISOR_PROMPTS.items():
-        value = payload.get(key)
-        if isinstance(value, str) and value.strip():
-            prompts[key] = value
-        else:
-            prompts[key] = default_value
-    return prompts
+    return load_prompt_config(PROMPT_CONFIG_PATH, DEFAULT_ADVISOR_PROMPTS)
 
 
 def _normalize_skill(value: str) -> str:

@@ -1,0 +1,45 @@
+{
+  "job": {
+    "title": "Senior Software Engineer - Business Platform (Ruby/Rails)",
+    "company": "Huntress",
+    "location": "Remote, United States of America",
+    "employment_type": "Senior Level",
+    "description": "The Huntress team is looking for an innovative and highly motivated Senior Software Engineer to join our Business Platform team. You will focus on creating the technical vision for new and exciting features from the product roadmap.",
+    "must_have": [
+      "defensive coding skills",
+      "resilient",
+      "failure-aware system design",
+      "JavaScript",
+      "Excellent technical",
+      "diagnostic",
+      "troubleshooting skills"
+    ],
+    "nice_to_have": [
+      "Experience integrating",
+      "managing billing systems",
+      "Salesforce SFDC",
+      "subscription management workflows"
+    ],
+    "responsibilities": [
+      "Manage the technical aspects of the development of features for the Portal, including UX/UI and API-focused work",
+      "Develop high-quality software, software designs, and architecture, setting the standard for team excellence",
+      "Collaborate with Growth teams to build and optimize data-driven features, experiments, and user flows",
+      "Convert acceptance criteria into functional workflows, data models, and associated software design",
+      "Focus on the entire life cycle of the system, including evolution, configuration, and risk management",
+      "Ensure code quality and test code coverage through code reviews and test plan reviews",
+      "Lead the team in providing accurate estimates and taking ownership of the timely completion of work",
+      "Mentor and coach engineers, fostering an environment that values professional development",
+      "Motivate teams and promote collaboration and engagement",
+      "Build and evolve AI tooling and usage in daily development workflows"
+    ],
+    "domain": "Cybersecurity"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer-business-platform-ruby-rails/9960771",
+    "parsed_at": "2026-09-04T15:31:08.152789+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

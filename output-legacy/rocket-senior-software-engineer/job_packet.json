@@ -1,0 +1,58 @@
+{
+  "job": {
+    "title": "Senior Software Engineer",
+    "company": "Rocket",
+    "location": "Remote (Texas, USA)",
+    "employment_type": "Senior Level",
+    "description": "As a Senior Software Engineer within Servicing Technology, you'll help build and scale the client-facing and team member-facing servicing applications used by millions of Rocket homeowners. Servicing Technology is accelerating through a full-scale System of Record modernization, and engineering velocity is a strategic asset. This role is for an engineer who wants to own meaningful product outcomes end to end - from understanding the business problem, shaping the technical approach, building across the stack, deploying to production, and learning from real usage.",
+    "must_have": [
+      "back end",
+      "React",
+      "C#",
+      "NestJS GraphQL",
+      "deploying",
+      "Kubernetes",
+      "system architecture",
+      "testing",
+      "observability",
+      "maintainability",
+      "solve ambiguous problems"
+    ],
+    "nice_to_have": [
+      "AI-assisted reviews",
+      "prompt-driven development",
+      "multi-agent workflows",
+      "AWS",
+      "Amazon EKS",
+      "Kubernetes",
+      "CI/CD",
+      "automated testing",
+      "early-stage",
+      "rapidly evolving product environments",
+      "fintech",
+      "financial services",
+      "mortgage servicing",
+      "influence team engineering practices"
+    ],
+    "responsibilities": [
+      "Own full-stack features from problem definition through design, implementation, release, measurement, and iteration",
+      "Design and implement scalable front-end solutions using Next.js or React with a NestJS GraphQL integration layer",
+      "Design and implement scalable back-end solutions using .NET / C# and NestJS GraphQL",
+      "Architect, deploy, and operate applications on AWS and Amazon EKS through CI/CD pipelines",
+      "Use AI tools and agentic development workflows to increase engineering speed, improve quality, and raise the bar for how the team builds software",
+      "Partner with product, design, data, and business stakeholders to translate ambiguous business needs into reliable technical solutions",
+      "Contribute to architecture and technical strategy decisions that balance speed, scalability, maintainability, and business impact",
+      "Collaborate effectively across distributed engineering teams, including partners in India",
+      "Mentor other engineers by sharing patterns, improving team workflows, and modeling high ownership"
+    ],
+    "domain": "Fintech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer/10640973",
+    "parsed_at": "2026-09-04T15:49:42.368734+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

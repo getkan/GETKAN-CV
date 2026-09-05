@@ -1,0 +1,78 @@
+{
+  "job_name": "webflow-senior-manager-engineering",
+  "model_name": "anthropic/claude-sonnet-4.5",
+  "job_packet": {
+    "job": {
+      "title": "Senior Manager, Engineering",
+      "company": "Webflow",
+      "location": "Remote (United States)",
+      "employment_type": "Full Time",
+      "description": "Leads the engineering team building Webflow\u2019s code-native platform, including high-fidelity visual-to-code workflows and coding-agent integration. This player-coach role includes architecture reviews, prototyping, hands-on contributions, hiring, coaching, and developing a high-performing technical culture.",
+      "must_have": [
+        "BA",
+        "code generation",
+        "language tooling",
+        "IDEs",
+        "developer infrastructure",
+        "agentic systems",
+        "team development"
+      ],
+      "nice_to_have": [
+        "Go",
+        "Rust",
+        "AI"
+      ],
+      "responsibilities": [
+        "Set the technical and product direction for Webflow code-native",
+        "Lead the integration of coding agents into the building experience",
+        "Own the developer experience of working with Webflow in code",
+        "Turn an emerging problem space into a coherent roadmap",
+        "Partner closely with product, design, and engineering teams",
+        "Stay technically engaged through architecture, design reviews, and hands-on contributions",
+        "Hire, coach, and develop engineers while building a high-performing technical culture"
+      ],
+      "domain": "Engineering"
+    },
+    "metadata": {
+      "source_url": "https://www.builtinaustin.com/job/senior-manager-engineering/10798940",
+      "parsed_at": "2026-09-04T15:30:22.948038+00:00",
+      "confidence": 1.0,
+      "field_attribution": {},
+      "validation_errors": []
+    },
+    "compatibility_score": 6
+  },
+  "artifacts": {
+    "output_path": "/home/getkan/Projects/personal/GETKAN-CV/output/webflow-senior-manager-engineering/tailored_resume.json",
+    "resume_root": "/home/getkan/Projects/personal/GETKAN-CV/output/webflow-senior-manager-engineering/resume",
+    "resume_tex": "/home/getkan/Projects/personal/GETKAN-CV/output/webflow-senior-manager-engineering/resume/resume.tex",
+    "output_dir": "/home/getkan/Projects/personal/GETKAN-CV/output/webflow-senior-manager-engineering",
+    "job_name": "webflow-senior-manager-engineering"
+  },
+  "model_output": {
+    "tailored_modules": {
+      "summary.tex": "\\begin{cvparagraph}\n    Senior Software Engineer with 8+ years of experience across frontend, backend, and infrastructure-focused delivery. I started with JavaScript and Vue, then expanded into full-stack development with PHP and Laravel, API design using the JSON:API specification, and MySQL performance optimization.\n\\end{cvparagraph}",
+      "experience.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{Work Experience}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n    %---------------------------------------------------------\n    \\cventry\n    {Junior Software Engineer} % Job title\n    {Home Depot} % Organization\n    {Austin, TX} % Location\n    {Jan. 2017 - Aug. 2017} % Date(s)\n    {\n        \\vspace{-4mm}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Implemented a React-based Checkout UI for Home Depot's e-commerce website.}\n        \\end{cvitems}\n    }\n    %---------------------------------------------------------\n    \\cventry\n    {Senior Software Engineer} % Job title\n    {ReviewPush} % Organization\n    {Austin, TX} % Location\n    {Sept. 2017 - Present} % Date(s)\n    {\n        \\vspace{-4mm}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Frontend Development - Advanced to Senior Frontend Developer and technical leader, spearheading architectural decisions and delivering scalable, high-performance frontend solutions.}\n        \\end{cvitems}\n        \\begin{cvsubitems}\n            \\item {Design System \\& Component Libraries - Architected and implemented comprehensive frontend design systems and component libraries, ensuring consistency, accessibility, and scalability across the entire codebase.}\n            \\item {Legacy Migration Initiative - Led the strategic migration from legacy Laravel Blade templates to Vue.js, resulting in significant improvements to performance, responsiveness, and delivery speed.}\n            \\item {Testing Framework Implementation - Established a robust testing framework using Jest and Vue Test Utils with comprehensive unit and integration test coverage, driving high code quality and reliability.}\n            \\item {Mentorship \\& Code Quality - Mentored other developers on frontend best practices, code quality standards, and modern development workflows.}\n        \\end{cvsubitems}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Backend Development - Expanded technical scope into full-stack development, taking ownership of critical backend systems and infrastructure initiatives.}\n        \\end{cvitems}\n        \\begin{cvsubitems}\n            \\item {Laravel API \\& Infrastructure - Designed and implemented new backend features and architected standardized backend patterns including service layers, repository patterns, and query optimization strategies.}\n            \\item {Monolith Architecture Modernization - Rearchitected the ReviewPush monolith from a controller-transformer pattern to a Controller-Service-Transformer model.}\n            \\item {Testing Framework Overhaul - Implemented a comprehensive testing strategy that transformed the backend from sporadic, ad-hoc tests to a robust suite of unit and integration tests, improving release.}\n            \\item {Database Management and Query Optimization - I have worked extensively with a MySQL database, optimizing performance through query tuning, strategic indexing, and caching strategies.}\n        \\end{cvsubitems}\n        \\begin{cvitems}\n            \\item {Leadership - Owned architecture decisions, mentored engineers, and drove business-wide priorities with a focus on performance, reliability, and software quality.}\n        \\end{cvitems}\n    }\n\\end{cventries}\n",
+      "personalprojects.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{Personal Projects}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n  %---------------------------------------------------------\n  \\cventry\n  {} % Affiliation/role\n  {} % Organization/group\n  {} % Location\n  {} % Date(s)\n  {\n    \\vspace{-10mm}\n    \\begin{cvitems}\n      \\item {I take pride in programming as a craft and continuously strive to improve my skills with personal projects. With the rapid advancements in AI, I have been particularly focused on experimenting with various AI tools.}\n    \\end{cvitems}\n    \\begin{cvsubitems}\n      \\item {Getkan-CV - An intelligent r\u00e9sum\u00e9 builder that leverages content files and a custom agent to generate tailored CVs aligned with job listing requirements.}\n      \\item {Linux Enthusiast - I have a strong passion for the Linux operating system and enjoy exploring different distributions, experimenting with window managers and tiling.}\n    \\end{cvsubitems}\n  }\n\\end{cventries}\n",
+      "aboutme.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{About me}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n  \\cventry\n  {} % Degree\n  {Georgetown University} % Institution\n  {Washington, D.C.} % Location\n  {Sept. 2013 - May. 2017} % Date(s)\n  {\n    \\vspace{-10mm}\n    \\begin{cvitems} % Description(s) of tasks/responsibilities\n      \\item {Bachelor of Arts in Computer Science, Bachelor of Arts in Economics.}\n    \\end{cvitems}\n  }\n  %---------------------------------------------------------\n  \\cventry\n  {} % Affiliation/role\n  {} % Organization/group\n  {} % Location\n  {} % Date(s)\n  {\n    \\vspace{-4mm}\n  }\n\\end{cventries}\n"
+    },
+    "recommendations": {
+      "positioning": [
+        "Prioritize bullets showing ownership, reliability, and cross-functional delivery impact."
+      ],
+      "project_suggestions": [
+        "Highlight projects touching BA, code generation, language tooling"
+      ],
+      "gap_analysis": [
+        "Add quantified outcomes (latency, uptime, delivery speed, or cost savings) where possible."
+      ]
+    }
+  },
+  "compile": {
+    "compile_log": "pass 1 exit=0\nf-dist/tex/generic/bitset/bitset.sty\n(/usr/share/texlive/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty)))\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hxetex.def\n(/usr/share/texlive/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty\n(/usr/share/texlive/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty))))\nNo file resume.aux.\n*geometry* driver: auto-detecting\n*geometry* detected driver: xetex\n\nPackage hyperref Warning: Rerun to get /PageLabels entry.\n\n\nOverfull \\hbox (1.46pt too wide) in paragraph at lines 70--71\n[]$[]$ $[]$$[]$\n\nUnderfull \\hbox (badness 10000) in paragraph at lines 70--71\n\n(./modules/summary.tex) (./modules/experience.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 20--51\n   [] \n) (./modules/personalprojects.tex) (./modules/aboutme.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 19--29\n   [] \n) [1] (./resume.aux)\n\nPackage rerunfilecheck Warning: File `resume.out' has changed.\n(rerunfilecheck)                Rerun to get outlines right\n(rerunfilecheck)                or use package `bookmark'.\n\n )\n(see the transcript file for additional information)\nOutput written on resume.pdf (1 page).\nTranscript written on resume.log.\n\npass 2 exit=0\nerref/pd1enc.def)\n(/usr/share/texlive/texmf-dist/tex/generic/intcalc/intcalc.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/puenc.def)\n(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty)\n(/usr/share/texlive/texmf-dist/tex/generic/bitset/bitset.sty\n(/usr/share/texlive/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty)))\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hxetex.def\n(/usr/share/texlive/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty\n(/usr/share/texlive/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty))))\n(./resume.aux)\n*geometry* driver: auto-detecting\n*geometry* detected driver: xetex\n(./resume.out) (./resume.out)\nOverfull \\hbox (1.46pt too wide) in paragraph at lines 70--71\n[]$[]$ $[]$$[]$\n\nUnderfull \\hbox (badness 10000) in paragraph at lines 70--71\n\n(./modules/summary.tex) (./modules/experience.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 20--51\n   [] \n) (./modules/personalprojects.tex) (./modules/aboutme.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 19--29\n   [] \n) [1] (./resume.aux) )\n(see the transcript file for additional information)\nOutput written on resume.pdf (1 page).\nTranscript written on resume.log.\n",
+    "summary": "Tailoring completed and PDF compiled",
+    "pdf_path": "/home/getkan/Projects/personal/GETKAN-CV/output/webflow-senior-manager-engineering/webflow-senior-manager-engineering.pdf",
+    "page_count": 1
+  },
+  "compatibility_score": 6
+}

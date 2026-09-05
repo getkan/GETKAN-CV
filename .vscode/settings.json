@@ -1,0 +1,19 @@
+{
+    // The resume class (getkan-cv.cls) requires fontspec/unicode-math, which only
+    // work under XeTeX/LuaTeX. latexmk CLI flags override ./resume/.latexmkrc, so
+    // the default latexmk recipe (which passes -pdf) must be overridden here.
+    "latex-workshop.latex.tools": [
+        {
+            "name": "latexmk",
+            "command": "latexmk",
+            "args": [
+                "-xelatex",
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "%DOC%"
+            ]
+        }
+    ],
+    "latex-workshop.latex.recipe.default": "latexmk"
+}

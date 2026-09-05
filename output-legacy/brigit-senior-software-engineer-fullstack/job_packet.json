@@ -1,0 +1,48 @@
+{
+  "job": {
+    "title": "Senior Software Engineer - Fullstack",
+    "company": "Brigit",
+    "location": "US Remote",
+    "employment_type": "Fulltime",
+    "description": "Brigit is looking for senior fullstack engineers to help us scale our next-generation consumer finance platform to millions of users in the next year. We\u2019ve found tremendous traction helping low income Americans make ends meet; now is the time to scale.",
+    "must_have": [
+      "REST based services",
+      "React Native",
+      "ES6",
+      "beyond we use Typescript",
+      "constructing schemas",
+      "performing migrations",
+      "writing analytical queries",
+      "Experience leading teams",
+      "Self-starter",
+      "able to work independently"
+    ],
+    "nice_to_have": [
+      "GraphQL experience",
+      "Kubernetes",
+      "Docker",
+      "other container system experience",
+      "Quantitative skills",
+      "knowledge",
+      "Finance"
+    ],
+    "responsibilities": [
+      "Evolving the APIs supporting User flows to ensure a great user experience",
+      "Optimizing queries and relational database schema to ensure speedy response times",
+      "Implementing algorithms related to monetary transaction evaluation, risk management, income verification, and other predictive models",
+      "Integrating with new 3rd party APIs to serve millions of customers",
+      "Decreasing customer service workload by building improvements to the product or improving internal automation",
+      "Creating new mobile & web clients for upcoming products",
+      "Automating visual testing & visual regression detection processes"
+    ],
+    "domain": "Fintech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer-fullstack-us-remote/10029562",
+    "parsed_at": "2026-09-04T15:46:38.186104+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

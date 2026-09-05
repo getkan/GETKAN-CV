@@ -2,12 +2,13 @@
 
 GETKAN-CV is a Python + LaTeX resume tailoring tool.
 
-It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules with truth-preserving edits, and compiles PDF resume outputs that are constrained to one page when possible.
+It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules with truth-preserving edits, and compiles PDF resume outputs using `xelatex`. For tailored builds, the tool applies progressive one-page layout profiles to fit content onto a single page when possible.
 
 ## What This Project Does
 
 - Parses a job listing into a normalized job packet.
 - Tailors selected resume modules (`summary.tex`, `experience.tex`, `personalprojects.tex`, `aboutme.tex`).
+- Uses OpenRouter to generate the tailored module content. `OPENROUTER_API_KEY` is required for tailoring; missing credentials, request failures, or invalid model output stop the run without generating a fallback resume.
 - Writes generated artifacts to a dedicated output folder.
 - Compiles a LaTeX PDF using `xelatex`.
 - Supports rebuilding tailored outputs directly from a manually edited `job_packet.json`, or forcing a fresh parse from the packet's source URL.
@@ -16,27 +17,37 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 
 ### `src/`
 
-#### `src/main.py`
+#### `src/cli.py` & `src/main.py`
 
-- CLI entrypoint and workflow orchestration.
+- Main entrypoint and command dispatch.
+- Resolves models per role from environment or CLI.
+- Manages workflow orchestration across all commands.
 
-#### `src/parser/`
+#### `src/application/`
 
-- `agent.py`: Job extraction, fallback parsing, normalization, validation.
-- `skills.py`: Deterministic skill normalization — canonical name mappings, blocklist filters, and prefix stripping for `must_have`/`nice_to_have` lists.
-- `prompts.json`: Editable prompt templates for parser behavior.
+**Core business logic and workflows**
 
-#### `src/advisor/`
+- `parse_job.py`: Fetches, extracts, normalizes, validates, and scores job sources from URLs or files.
+- `tailor_resume.py`: Core tailoring policy, module rewriting, artifact generation, and LaTeX compilation.
+- `advise.py`: Job hunt recommendation generation across saved job packets.
+- `deterministic_tailor.py`: Deterministic resume module rewriting engine.
 
-- `agent.py`: Cross-job analysis of saved job packets with resume-based recommendation output.
-- `prompts.json`: Editable prompt templates for advisor behavior.
-- `sections/`: Section builders for general advice, most compatible jobs, skills, job titles, resume recommendations, interview prep, ATS gaps, and portfolio suggestions.
-- `common.py`: Shared advisor helpers for text normalization and related advisor utilities.
+#### `src/domain/`
 
-#### `src/tailor/`
+**Typed contracts and data structures**
 
-- `agent.py`: Module tailoring, one-page fit profiles, artifact writing, compile logic.
-- `prompts.json`: Editable prompt templates for tailor behavior.
+- `job_packet.py`: Normalized job metadata, requirements, and metadata.
+- `resume_profile.py`: One-page layout profile contract (sentence/item limits, word limits).
+
+#### `src/infrastructure/`
+
+**External integrations and utilities**
+
+- `openrouter.py`: OpenRouter JSON-schema transport and request/response handling.
+- `latex.py`: XeLaTeX rendering, PDF page counting, and log inspection.
+- `artifacts.py`: JSON serialization and file I/O helpers.
+- `prompt_config.py`: Named prompt-configuration loader with safe defaults.
+- `prompts.json`: Editable prompt groups for parsing, tailoring, and advice generation.
 
 
 ### `resume/`
@@ -113,11 +124,19 @@ For each tailored run, TeX files are copied/generated into:
 
 ## Requirements
 
+### System
+
 - Python 3.10+ (recommended)
-- `xelatex` available on `PATH`
+- `xelatex` (XeTeX distribution) — required for PDF compilation
+  - On Ubuntu/Debian: `sudo apt install texlive-xetex`
+  - On Fedora: `sudo dnf install texlive-xetex`
+  - On macOS: `brew install mactex` or `brew install basictex` + `tlmgr install collection-xetex`
 - Optional but recommended: `pdfinfo` (for page count metadata)
-- OpenRouter API key for model-assisted parsing:
-  - `OPENROUTER_API_KEY`
+
+### API & Environment
+
+- OpenRouter API key for model-assisted parsing and tailoring:
+  - `OPENROUTER_API_KEY` (required)
   - Optional global fallback: `OPENROUTER_MODEL`
   - Optional parser model override: `OPENROUTER_MODEL_PARSER`
   - Optional tailor model override: `OPENROUTER_MODEL_TAILOR`
@@ -162,8 +181,7 @@ Resume template identity placeholders resolve from env vars:
 - `RESUME_MOBILE`
 - `RESUME_EMAIL`
 
-Section-level tailoring controls live in `src/tailor/prompts.json`.
-Advisor section prompts live in `src/advisor/prompts.json`.
+Parser, tailoring, and advisor prompts live in `src/infrastructure/prompts.json` under the `parser`, `tailor`, and `advisor` keys.
 Common keys:
 
 - `summary_section_prompt`
@@ -339,20 +357,45 @@ This mode:
 
 This removes the contents of `output/` and `log/` and recreates both directories.
 
+## LaTeX Build Setup
+
+### XeLaTeX Requirement
+
+The custom `getkan-cv.cls` document class uses `fontspec` and `unicode-math`, which require XeTeX or LuaTeX. The build is configured to use `xelatex` via:
+
+1. **Workspace configuration** ([.vscode/settings.json](.vscode/settings.json)):
+   - Defines the LaTeX Workshop recipe to use `-xelatex` flag (not `-pdf`).
+   - Workspace settings override the VS Code extension's default `pdflatex` recipe.
+
+2. **Local latexmk config** ([resume/.latexmkrc](resume/.latexmkrc)):
+   - Sets `$pdf_mode = 5` (XeLaTeX mode) for command-line builds.
+   - Ensures consistent behavior across VS Code editor and terminal invocations.
+
+### Build Verification
+
+Test XeLaTeX build from the command line:
+
+```bash
+cd resume && latexmk -xelatex -interaction=nonstopmode -file-line-error resume.tex
+```
+
+Or from VS Code using the LaTeX Workshop extension (configured to use the xelatex recipe).
+
 ## Test Commands
 
 Run the full unit test suite:
 
 ```bash
-python -m unittest -q tests.test_parser_agent tests.test_advisor_agent tests.test_tailor_agent
+python -m unittest -q tests.test_parse_job tests.test_tailor_resume tests.test_advise tests.test_prompt_config
 ```
 
-Run a single area:
+Run a single test file:
 
 ```bash
-python -m unittest -q tests.test_parser_agent
-python -m unittest -q tests.test_advisor_agent
-python -m unittest -q tests.test_tailor_agent
+python -m unittest -q tests.test_parse_job
+python -m unittest -q tests.test_tailor_resume
+python -m unittest -q tests.test_advise
+python -m unittest -q tests.test_prompt_config
 ```
 
 ## Generated Output Layout
@@ -395,8 +438,35 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 
 For a non-tailored base resume build, use `build-base`.
 
-## Notes
+## Architecture & Data Flow
 
-- Tailoring is constrained to use existing resume facts only.
-- Project selection/prioritization logic for personalprojects content is deterministic and independent of job description.
-- One-page fitting uses progressive compactness profiles when generating tailored output.
+### Parsing Workflow
+
+1. `src/cli.py` dispatches to `src/application/parse_job.py`.
+2. The job source (URL or file) is fetched and normalized.
+3. Fact extraction produces structured job metadata: title, company, requirements, responsibilities.
+4. Validation checks for required fields; failures are recorded in `metadata.validation_errors`.
+5. A compatibility score (1–10) is computed by comparing job requirements against resume content.
+6. The normalized packet is written to `job_packet.json`.
+
+### Tailoring Workflow
+
+1. `src/cli.py` loads the job packet and invokes `src/application/tailor_resume.py`.
+2. For tailored builds, a list of one-page layout profiles is applied progressively:
+   - Profile 1: least constrained (summary_sentences=2, cvsubitems_limit=4, word_limit=28)
+   - Profile 2: moderate constraints (summary_sentences=2, cvsubitems_limit=3, word_limit=24)
+   - Profile 3: maximum constraints (summary_sentences=1, cvsubitems_limit=2, word_limit=18)
+3. For each profile:
+   - `src/application/deterministic_tailor.py` rewrites each module deterministically (no model calls).
+   - Modules are written to `output/<job_name>/resume/modules/`.
+   - XeLaTeX compiles the resume to PDF.
+   - Page count is checked; if ≤ 1 page, the profile is selected and tailoring stops.
+4. If no profile fits to one page, the least constrained profile is used.
+5. Artifacts are written to `output/<job_name>/`; the PDF is published at `output/<job_name>/<job_name>.pdf`.
+
+### Notes
+
+- Tailoring is constrained to use existing resume facts only; no new achievements are invented.
+- Module rewriting is deterministic (no LLM involved in the rewrite phase).
+- Project selection/prioritization logic for `personalprojects.tex` is independent of job description and governed by a fixed priority list.
+- One-page fitting uses progressive compactness profiles to maximize content density while maintaining readability.

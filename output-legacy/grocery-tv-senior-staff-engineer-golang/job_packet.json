@@ -1,0 +1,44 @@
+{
+  "job": {
+    "title": "Senior Staff Engineer - Golang",
+    "company": "Grocery TV",
+    "location": "Austin, TX, USA",
+    "employment_type": "Hybrid",
+    "description": "This engineer will play a critical role in scaling and hardening Grocery TV\u2019s backend systems as the platform continues to grow. This engineer will work across APIs, content delivery pipelines, and media network orchestration services to improve system resiliency, performance, and reliability.",
+    "must_have": [
+      "operating high-scale",
+      "high-volume backend systems",
+      "tradeoffs",
+      "fault tolerance strategies",
+      "Relational Databases"
+    ],
+    "nice_to_have": [
+      "Go",
+      "AI",
+      "CI/CD",
+      "Observability"
+    ],
+    "responsibilities": [
+      "Design, build, and maintain high-scale backend services using Go",
+      "Lead implementation of backend projects that improve system reliability, resiliency, and performance",
+      "Design and evolve API-first services that support customer-facing and internal applications",
+      "Contribute to system architecture and technical design for future initiatives",
+      "Partner with Product to scope, plan, and execute backend work aligned with business goals",
+      "Identify and remediate performance bottlenecks and reliability risks across distributed systems",
+      "Participate in a shared on-call rotation to support production systems",
+      "Collaborate closely with other engineers through pairing, design reviews, and code reviews",
+      "Drive operational excellence through observability, monitoring, and incident follow-ups",
+      "Proactively identify and implement process improvements in software development process",
+      "Be a champion for testing, leading by example through unit and integration testing throughout projects"
+    ],
+    "domain": "AdTech, Digital Media, Hardware, Marketing Tech, Retail, Software"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-staff-engineer-golang/10796333",
+    "parsed_at": "2026-09-04T16:29:02.093716+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

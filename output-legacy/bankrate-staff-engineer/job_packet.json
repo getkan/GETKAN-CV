@@ -1,0 +1,55 @@
+{
+  "job": {
+    "title": "Staff Engineer",
+    "company": "Bankrate",
+    "location": "Remote (Hiring Remotely in United States)",
+    "employment_type": "Senior Level",
+    "description": "As a Staff Engineer at Bankrate, you will be responsible for architecting and delivering scalable, secure systems across teams, solving complex cross-team problems, and leading large technical initiatives. You will mentor engineers, align technical direction with product and business outcomes while balancing performance, maintainability, and cost.",
+    "must_have": [
+      "record of architecting",
+      "delivering scalable",
+      "resilient systems",
+      "systems thinking",
+      "Architecting",
+      "modern web architectures",
+      "TypeScript ecosystem",
+      "curiosity",
+      "commitment to continuous learning",
+      "versioning",
+      "scaling resilient REST",
+      "GraphQL microservices",
+      "elevating engineering talent",
+      "Implementing enterprise-wide observability"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI",
+      "Microservices",
+      "CI/CD",
+      "Observability"
+    ],
+    "responsibilities": [
+      "Solve complex, mission-critical problems that require cross-team collaboration and deep technical evaluation.",
+      "Act as a trusted technical consultant and architect for multiple teams within an industry group.",
+      "Partner with product and business stakeholders to align technical direction with measurable outcomes and company goals.",
+      "Explore and evaluate emerging technologies, identifying opportunities to leverage new tools, frameworks, or paradigms that create business value.",
+      "Lead technical design, planning, and execution for large-scale initiatives that span multiple systems in their product domains.",
+      "Assess and execute trade-off decisions between performance, scalability, maintainability, and cost.",
+      "Define and deliver technical stories that improve the integrity, performance, and long-term sustainability of shared systems.",
+      "Conduct architectural reviews with the broader Staff group and proactively identify areas for simplification, modernization, and risk reduction.",
+      "Mentor and develop engineers through design reviews, pair programming, and technical coaching.",
+      "Champion consistency in design patterns, operational excellence, and engineering best practices across teams.",
+      "Contribute to a culture of continuous learning and innovation."
+    ],
+    "domain": "Fintech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/staff-engineer/9997826",
+    "parsed_at": "2026-09-04T15:46:59.075350+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,46 @@
+{
+  "job": {
+    "title": "Software Engineer, Content Platform",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information. For more information, visit www.redditinc.com. This role is remote friendly. Reddit has a flexible first workforce. Who We Are: The Infrastructure organization enables Reddit to deliver Reliability, Performance and Efficiency, with a single opinionated technology stack. The Content Platform team within Infrastructure focuses on empowering product teams to build the best possible Content-related experiences, easily and reliably. This is a high-impact team that owns the Tier-0 services and core data models that power some of the most visible aspects of our product - viewing a feed, posting, commenting, upvoting - and we work closely with teams like Consumer, Ads, Feeds, Storage and Ranking. This team is also responsible for running and maintaining R2 \u2013 Reddit\u2019s monolith legacy stack that is in the critical path for every Critical User Journey at Reddit. We are looking to hire a Software Engineer to help us in this mission. This is a high-impact role where your passion for building and maintaining high-quality code, scaling Tier-0 infrastructure and building high-leverage platform services will enable our partner product teams to deliver tangible user value.",
+    "must_have": [
+      "maintainable",
+      "well-tested code",
+      "equivalent work experience",
+      "one",
+      "Python",
+      "C++",
+      "Java",
+      "PostgreSQL",
+      "Redis",
+      "gRPC",
+      "AWS",
+      "GCP"
+    ],
+    "nice_to_have": [
+      "Prior experience with scaled",
+      "high rate platform services",
+      "API design"
+    ],
+    "responsibilities": [
+      "Design, write, and deliver software (mostly in Go, sometimes in Python) to improve availability, scalability, latency, and efficiency of Reddit\u2019s products",
+      "Dive deep into the codebase of a suite of Go services owned by the team as well as Reddit\u2019s monolith Python legacy stack",
+      "Make system level improvements, enhancements and implement complex code modifications",
+      "Develop judgment to identify and discuss gaps in our current platform; Help evolve it for next 2+ years of growth",
+      "Work collaboratively with a wide variety of cross-functional teams across Reddit; actively engage in soliciting customer feedback",
+      "Collaborate with teammates to share on-call responsibilities and support monitoring/alerting to improve reliability, scalability, latency, and efficiency of Reddit",
+      "Continue improving your own technical abilities, acumen and soft skills"
+    ],
+    "domain": ""
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8139781",
+    "parsed_at": "2026-09-04T16:54:03.497813+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

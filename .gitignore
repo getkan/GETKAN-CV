@@ -26,6 +26,7 @@
 ## Resume folder content
 resume/*
 !resume/.gitkeep
+!resume/.latexmkrc
 !resume/fonts/
 !resume/fonts/**
 
@@ -36,7 +37,8 @@ output/
 docs/
 
 ## IDE & Environment
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .github/
 
 ## Logs & Temporary files

@@ -1,0 +1,63 @@
+{
+  "job": {
+    "title": "Senior Enterprise Business Systems Engineer",
+    "company": "Nasuni",
+    "location": "Austin, TX",
+    "employment_type": "Remote Or Hybrid",
+    "description": "We're hiring a Senior Enterprise Business Systems Engineer to develop, integrate, and optimize the platforms that power Nasuni's Go-to-Market operations. Salesforce is the core CRM. You'll work across Salesforce and a modern GTM technology ecosystem \u2014 including platforms like HubSpot, Workato, Fivetran, and Snowflake \u2014 to build solutions that are scalable, well-engineered, and ready for what comes next.",
+    "must_have": [
+      "Service Cloud",
+      "CPQ",
+      "Experience Cloud",
+      "Apex",
+      "LWC",
+      "Salesforce Flow",
+      "Salesforce API skills",
+      "supporting integrations between Salesforce",
+      "SQL proficiency",
+      "REST APIs",
+      "event-driven integrations",
+      "webhooks",
+      "auth protocols",
+      "data sync patterns",
+      "CI/CD",
+      "Git-based development Gearset",
+      "IS"
+    ],
+    "nice_to_have": [
+      "Workato",
+      "comparable iPaaS platforms",
+      "Snowflake",
+      "Fivetran",
+      "dbt",
+      "HubSpot integration experience",
+      "Platform Developer II",
+      "Platform App Builder",
+      "comparable certifications",
+      "revenue intelligence",
+      "intent data",
+      "customer success",
+      "sales engagement platforms",
+      "headless",
+      "API-first",
+      "composable CRM modernization"
+    ],
+    "responsibilities": [
+      "Develop and maintain scalable solutions using Apex, Lightning Web Components, Salesforce Flow, Platform Events, and APIs",
+      "Collaborate with integration engineers to design and build connections between Salesforce and the broader GTM ecosystem",
+      "Support and develop integrations across a modern revenue technology stack including Salesforce, HubSpot, Fivetran, Workato, and Snowflake",
+      "Write and optimize SQL queries for data analysis, reporting validation, troubleshooting, and data quality investigations",
+      "Own technical delivery from design through deployment",
+      "Use AI-assisted development tools to accelerate engineering while maintaining code quality and ownership"
+    ],
+    "domain": "Cloud Technology, CRM Development, Sales Operations"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-enterprise-business-systems-engineer/10155472",
+    "parsed_at": "2026-09-04T16:27:38.032334+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

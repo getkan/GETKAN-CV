@@ -1,0 +1,46 @@
+{
+  "job": {
+    "title": "Senior Backend Engineer, Safety",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "Full Time",
+    "description": "Reddit is continuing to grow our teams with the best talent. This role is completely remote friendly within the United States. If you happen to live close to one of our physical office locations (San Francisco, Los Angeles, New York City & Chicago) our doors are open for you to come into the office as often as you'd like. The Safety and Moderation organization builds the tools that help moderators keep Reddit safe, healthy, and scalable.",
+    "must_have": [
+      "Python",
+      "Rust",
+      "Ruby",
+      "GraphQL",
+      "REST APIs",
+      "HTTP",
+      "Thrift",
+      "gRPC basics",
+      "the ability to design",
+      "implement maintainable APIs",
+      "organizational skills",
+      "keep projects on schedule",
+      "Self-directed",
+      "innovative"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI"
+    ],
+    "responsibilities": [
+      "Work cross-functionally with product, design, and other engineering counterparts to execute on product and business strategy.",
+      "Contribute to the full development cycle: technical design, development, test, experimentation, analysis, and launch.",
+      "Review code and design docs, giving feedback on product specs and mocks.",
+      "Lead a team of thoughtful, fast-moving, and motivated engineers.",
+      "Set and define standards that improve developer workflows, recommend best practices, and help coach and mentor engineers."
+    ],
+    "domain": "Software Engineering"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8093006",
+    "parsed_at": "2026-09-04T16:54:42.343048+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

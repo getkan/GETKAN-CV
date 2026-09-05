@@ -1,0 +1,64 @@
+{
+  "job": {
+    "title": "Senior Software Engineer, Media Experience",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information. We are seeking a Senior Software Engineer to help us build the next version of our media infrastructure. In this role, you will define the work on the technical components of how we ingest, process, store, and deliver video and audio content at Reddit. You will tackle complex technical challenges to support our media product strategy and deliver high-quality media experiences globally.",
+    "must_have": [
+      "Python",
+      "Ruby",
+      "Java",
+      "C++",
+      "Experienced with GraphQL",
+      "REST APIs",
+      "HTTP",
+      "gRPC",
+      "Thrift basics",
+      "the ability to design",
+      "implement maintainable APIs",
+      "image processing",
+      "cropping",
+      "WebP",
+      "HTTP Live Streaming HLS",
+      "MPEG-DASH",
+      "MP4",
+      "other streaming protocols",
+      "H 265",
+      "HEVC",
+      "VP9",
+      "AV1",
+      "organizational skills"
+    ],
+    "nice_to_have": [
+      "curiosity",
+      "VMAF",
+      "PSNR",
+      "GPAC",
+      "modifying",
+      "manipulating media streams",
+      "Experienced with client-side technologies",
+      "AVFoundation",
+      "VideoToolbox",
+      "video prefetching"
+    ],
+    "responsibilities": [
+      "Work cross-functionally with product, design, and other engineering counterparts to execute on product and business strategy and build novel products and features that our users will love",
+      "Contribute to the full development cycle: technical design, development, test, experimentation, analysis, and launch",
+      "Review code and design docs, giving feedback on product specs and mocks",
+      "Participate with a team of thoughtful, fast-moving, and motivated engineers",
+      "Contribute to standards that improve developer workflows, recommend best practices, and help mentor junior engineers",
+      "Balance speed with quality",
+      "Collaborate with client engineers and platform engineers to improve performance of media across Reddit"
+    ],
+    "domain": "Media Technology"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8048988",
+    "parsed_at": "2026-09-04T16:55:05.142347+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,52 @@
+{
+  "job": {
+    "title": "Machine Learning Manager, Feed Relevance (Retrieval)",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is looking for an experienced Engineering Manager to lead our Feed Retrieval team. In this role, you\u2019ll lead a high-impact team of Machine Learning Engineers building the systems that identify, retrieve, and shape the candidate inventory powering Reddit\u2019s personalized feeds. Your team will work at the foundation of Feed Relevance, expanding the set of high-quality content Reddit can recommend, improving personalization and discovery for users across different levels of signal, and building scalable ML systems that directly shape the experiences of over 120M+ daily users.",
+    "must_have": [
+      "managing high-performing ML",
+      "recommender-systems teams",
+      "retrieval models",
+      "embedding-based systems",
+      "sequence models",
+      "transformer-based architectures",
+      "especially candidate retrieval",
+      "embedding",
+      "indexing systems",
+      "ranking handoffs",
+      "feed personalization",
+      "exploration",
+      "content quality",
+      "measurement strategies",
+      "well-designed"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "Machine Learning",
+      "AI"
+    ],
+    "responsibilities": [
+      "Define the technical vision and long-term roadmap for Feed Retrieval.",
+      "Translate broad Feed Relevance goals into a focused team roadmap.",
+      "Coach and support the development of your team.",
+      "Oversee the design, development, and optimization of retrieval systems.",
+      "Establish strong measurement, experimentation, and debugging practices.",
+      "Collaborate with ML platform, infrastructure, ranking, safety, and product teams.",
+      "Maintain high standards for system performance, reliability, latency, cost efficiency, and responsible recommendation practices.",
+      "Work with cross-functional partners to identify key areas of opportunity.",
+      "Partner with recruiting team to attract, interview, and hire diverse and talented machine learning engineers."
+    ],
+    "domain": "Machine Learning"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8094985",
+    "parsed_at": "2026-09-04T16:50:50.202806+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,53 @@
+{
+  "job": {
+    "title": "Senior Software Developer",
+    "company": "HCSS",
+    "location": "Remote or Hybrid, USA",
+    "employment_type": "Senior Level",
+    "description": "We are HCSS. For the last 40 years, we have been developing software to help construction companies streamline their operations. Based in Sugar Land, TX, our mission is helping customers achieve excellence through our proven customer-centric, end-to-end solutions and exceptionally helpful service, while providing a great life for our employees.",
+    "must_have": [
+      "Azure Functions",
+      "App Insights",
+      "app service plans scaling",
+      "release pipelines",
+      "infrastructure-as-code",
+      "slot-based deployment",
+      "NET 4 0+",
+      ".NET",
+      "C#",
+      "ASP NET MVC",
+      "JavaScript",
+      "TypeScript",
+      "CSS",
+      "React",
+      "SQL",
+      "architecture",
+      "stored procedures",
+      "basic TSQL queries",
+      "Dapper"
+    ],
+    "nice_to_have": [
+      "Go",
+      "AI",
+      "Microservices",
+      "CI/CD"
+    ],
+    "responsibilities": [
+      "Analyzing your assigned HCSS product, database schema, and architecture for improvements that can increase value (ROI, benefit to team, etc.)",
+      "Implementing features for your assigned HCSS product that are significant in scope.",
+      "Working closely with other developers to enhance infrastructure, improve reliability, and efficiency.",
+      "Sharing best practices at team planning, retrospective, and daily standup meetings.",
+      "Lead code reviews and mentor junior developers in best practices for software design, development, and testing.",
+      "Occasional travel to our office may be requested up to once or twice a year"
+    ],
+    "domain": "Construction software"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-developer/10650841",
+    "parsed_at": "2026-09-04T15:49:04.465370+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

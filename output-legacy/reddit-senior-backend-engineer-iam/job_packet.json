@@ -1,0 +1,45 @@
+{
+  "job": {
+    "title": "Senior Backend Engineer, IAM",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "Full Time",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about.",
+    "must_have": [
+      "Security",
+      "Privacy",
+      "Anti-Abuse",
+      "authentication protocols OAuth2",
+      "OIDC",
+      "SAML",
+      "one",
+      "cloud infrastructure Kubernetes",
+      "CI/CD",
+      "AWS",
+      "GCP",
+      "High empathy"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI",
+      "CI/CD"
+    ],
+    "responsibilities": [
+      "Work with the team to select, scope, and drive high leverage projects that align with Reddit\u2019s goals.",
+      "Execute on a strategy and create a more performant, more scalable, higher quality architecture around authentication, authorization, and identity.",
+      "Mentor, coach, and collaborate with other technical contributors.",
+      "Work together with a variety of cross-functional teams across Reddit Engineering.",
+      "Learn and improve your own technical and non-technical abilities."
+    ],
+    "domain": "Identity and Access Management"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8044767",
+    "parsed_at": "2026-09-04T16:53:06.248352+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

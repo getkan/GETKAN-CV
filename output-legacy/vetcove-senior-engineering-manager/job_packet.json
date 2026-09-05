@@ -1,0 +1,50 @@
+{
+  "job": {
+    "title": "Senior Engineering Manager",
+    "company": "Vetcove",
+    "location": "Remote (in USA)",
+    "employment_type": "Senior Level",
+    "description": "Leads and develops a software engineering team through coaching, feedback, hiring, and career growth. Partners with product and engineering leadership on priorities, execution, architecture, and technical strategy. Reviews system designs, evaluates tradeoffs, supports code reviews, and drives improvements in scalability, reliability, performance, testing, and engineering processes.",
+    "must_have": [
+      "Experience managing",
+      "leading",
+      "coaching",
+      "engineer growth",
+      "technical judgment",
+      "architecture",
+      "system design",
+      "engineering tradeoffs",
+      "design systems",
+      "features with scalability",
+      "security",
+      "reliability",
+      "performance in mind"
+    ],
+    "nice_to_have": [
+      "Go",
+      "AI"
+    ],
+    "responsibilities": [
+      "Lead, mentor, and grow a team of engineers with a strong focus on people development, team health, and career growth",
+      "Support engineers through regular coaching, feedback, goal setting, and career development conversations",
+      "Create clarity for the team around priorities, expectations, ownership, and successful outcomes",
+      "Partner closely with product and engineering leadership to define priorities, drive execution, and deliver successful outcomes",
+      "Support projects from early planning and architecture through implementation, rollout, and long-term maintenance",
+      "Stay close to the technical work by understanding system design, reviewing technical plans, participating in architecture discussions, and helping evaluate tradeoffs",
+      "Assist with code reviews and technical feedback where helpful",
+      "Help unblock engineers by providing context, asking the right questions, connecting people, and clarifying priorities",
+      "Contribute to the conceptualization and technical design of new ideas and product enhancements",
+      "Help drive architectural improvements that prioritize scalability, reliability, maintainability, and performance",
+      "Reinforce strong engineering standards, development practices, testing habits, and ownership across the team"
+    ],
+    "domain": "Healthtech & Veterinary Software"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-engineering-manager/10913344",
+    "parsed_at": "2026-09-04T15:29:24.171604+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,33 @@
+{
+  "job": {
+    "title": "Senior Software Engineer, Ads Creative Effectiveness",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information.",
+    "must_have": [
+      "Extensive experience architecting",
+      "Python",
+      "Go"
+    ],
+    "nice_to_have": [],
+    "responsibilities": [
+      "Drive the design and implementation of high-performance backends for ad creative generation.",
+      "Lead the development of end-to-end image and video editing engines.",
+      "Architect the infrastructure that bridges the gap between ad performance and the creative engine.",
+      "Solve complex engineering challenges around high-concurrency inference and latency optimization.",
+      "Design and maintain mission-critical middleware for content filtering and compliance.",
+      "Partner with Product, UX, and Ads ML leadership to define the technical roadmap for ACE.",
+      "Raise the bar for code quality, system reliability, and documentation within the team."
+    ],
+    "domain": "Creative Effectiveness"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/7964461",
+    "parsed_at": "2026-09-04T16:51:49.798066+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

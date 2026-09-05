@@ -1,0 +1,41 @@
+{
+  "job": {
+    "title": "Senior Engineering Manager, Unified Embeddings Platform",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information. For more information, visit www.redditinc.com.",
+    "must_have": [
+      "scalability",
+      "reliability",
+      "performance",
+      "ease of use",
+      "embeddings"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "Machine Learning",
+      "AI"
+    ],
+    "responsibilities": [
+      "Lead our Embeddings Platform Team and be instrumental in architecting, implementing, and maintaining platform providing foundational ML embeddings",
+      "Partner with teams across Reddit infrastructure and ML modelling",
+      "Lead the creation of foundational embeddings leveraging state of the art architectures",
+      "Lead the design and long-term evolution of Reddit\u2019s Embeddings platform",
+      "Drive high-impact, high-leverage projects that align with Reddit\u2019s broader engineering and business goals",
+      "Build and grow a high-performing team, including hiring, mentoring, and creating a culture of technical excellence",
+      "Establish and champion best practices for the production, consumption, and governance of machine learning features",
+      "Communicate your team\u2019s work and set expectations with cross-functional stakeholders"
+    ],
+    "domain": "Machine Learning"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/7359367",
+    "parsed_at": "2026-09-04T16:51:20.558525+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

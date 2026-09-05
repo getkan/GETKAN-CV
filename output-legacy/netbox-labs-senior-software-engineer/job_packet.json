@@ -1,0 +1,38 @@
+{
+  "job": {
+    "title": "Senior Software Engineer",
+    "company": "NetBox Labs",
+    "location": "Austin, TX",
+    "employment_type": "Remote",
+    "description": "NetBox Labs simplifies the full infrastructure lifecycle for the world\u2019s most demanding technical environments. As the commercial steward of NetBox, the open-source infrastructure system of record trusted by 10,000+ organizations for more than a decade, NetBox Labs streamlines infrastructure procurement, modeling, deployment and management for both humans and AI agents.",
+    "must_have": [
+      "AWS Amazon Web Services",
+      "C++",
+      "Django",
+      "Go",
+      "Python",
+      "React",
+      "Terraform"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI"
+    ],
+    "responsibilities": [
+      "Manage and enhance the backend infrastructure for NetBox Cloud.",
+      "Collaborate with multi-functional teams to ensure stable, scalable infrastructure.",
+      "Develop and maintain software features in accordance with user requirements and company standards.",
+      "Contribute to the improvement of existing software and infrastructure."
+    ],
+    "domain": "Cloud Software"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/company/netbox-labs",
+    "parsed_at": "2026-09-04T15:29:55.201025+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

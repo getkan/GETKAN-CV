@@ -1,0 +1,84 @@
+{
+  "job_name": "vannevar-senior-software-engineer-search",
+  "model_name": "anthropic/claude-sonnet-4.5",
+  "job_packet": {
+    "job": {
+      "title": "Senior Software Engineer, Search",
+      "company": "Vannevar",
+      "location": "Remote, USA",
+      "employment_type": "Senior Level",
+      "description": "Design and lead the technical strategy for search across Vannevar\u2019s products. Build and improve full-text, vector, and LLM-powered retrieval systems, optimizing latency, relevance, index quality, freshness, and performance. Collaborate with ML, product, design, and mission strategy teams to translate user needs into search innovations.",
+      "must_have": [
+        "information retrieval",
+        "related fields",
+        "NLP",
+        "Machine Learning",
+        "ranking",
+        "query parsing",
+        "tokenization",
+        "vector search",
+        "Elasticsearch",
+        "OpenSearch",
+        "precision",
+        "recall",
+        "NDCG",
+        "Excellent analytical"
+      ],
+      "nice_to_have": [
+        "Go",
+        "Rust",
+        "Machine Learning",
+        "AI",
+        "CI/CD"
+      ],
+      "responsibilities": [
+        "Design and adapt the technical strategy for search within Vannevar\u2019s products",
+        "Improve search latency and relevance",
+        "Collaborate with product engineers, designers, and mission strategists to translate user needs into data-informed search innovations",
+        "Research and apply emerging technologies, trends and best practices in the search/information retrieval domain"
+      ],
+      "domain": "Artificial Intelligence, Machine Learning, Software, Defense"
+    },
+    "metadata": {
+      "source_url": "https://www.builtinaustin.com/job/senior-software-engineer-search/10920818",
+      "parsed_at": "2026-09-04T15:29:13.319249+00:00",
+      "confidence": 1.0,
+      "field_attribution": {},
+      "validation_errors": []
+    },
+    "compatibility_score": 6
+  },
+  "artifacts": {
+    "output_path": "/home/getkan/Projects/personal/GETKAN-CV/output/vannevar-senior-software-engineer-search/tailored_resume.json",
+    "resume_root": "/home/getkan/Projects/personal/GETKAN-CV/output/vannevar-senior-software-engineer-search/resume",
+    "resume_tex": "/home/getkan/Projects/personal/GETKAN-CV/output/vannevar-senior-software-engineer-search/resume/resume.tex",
+    "output_dir": "/home/getkan/Projects/personal/GETKAN-CV/output/vannevar-senior-software-engineer-search",
+    "job_name": "vannevar-senior-software-engineer-search"
+  },
+  "model_output": {
+    "tailored_modules": {
+      "summary.tex": "\\begin{cvparagraph}\n    Senior Software Engineer with 8+ years of experience across frontend, backend, and infrastructure-focused delivery. I started with JavaScript and Vue, then expanded into full-stack development with PHP and Laravel, API design using the JSON:API specification, and MySQL performance optimization.\n\\end{cvparagraph}",
+      "experience.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{Work Experience}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n    %---------------------------------------------------------\n    \\cventry\n    {Junior Software Engineer} % Job title\n    {Home Depot} % Organization\n    {Austin, TX} % Location\n    {Jan. 2017 - Aug. 2017} % Date(s)\n    {\n        \\vspace{-4mm}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Implemented a React-based Checkout UI for Home Depot's e-commerce website.}\n        \\end{cvitems}\n    }\n    %---------------------------------------------------------\n    \\cventry\n    {Senior Software Engineer} % Job title\n    {ReviewPush} % Organization\n    {Austin, TX} % Location\n    {Sept. 2017 - Present} % Date(s)\n    {\n        \\vspace{-4mm}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Frontend Development - Advanced to Senior Frontend Developer and technical leader, spearheading architectural decisions and delivering scalable, high-performance frontend solutions.}\n        \\end{cvitems}\n        \\begin{cvsubitems}\n            \\item {Design System \\& Component Libraries - Architected and implemented comprehensive frontend design systems and component libraries, ensuring consistency, accessibility, and scalability across the entire codebase.}\n            \\item {Legacy Migration Initiative - Led the strategic migration from legacy Laravel Blade templates to Vue.js, resulting in significant improvements to performance, responsiveness, and delivery speed.}\n            \\item {Testing Framework Implementation - Established a robust testing framework using Jest and Vue Test Utils with comprehensive unit and integration test coverage, driving high code quality and reliability.}\n            \\item {Mentorship \\& Code Quality - Mentored other developers on frontend best practices, code quality standards, and modern development workflows.}\n        \\end{cvsubitems}\n        \\begin{cvitems} % Description(s) of tasks/responsibilities\n            \\item {Backend Development - Expanded technical scope into full-stack development, taking ownership of critical backend systems and infrastructure initiatives.}\n        \\end{cvitems}\n        \\begin{cvsubitems}\n            \\item {Laravel API \\& Infrastructure - Designed and implemented new backend features and architected standardized backend patterns including service layers, repository patterns, and query optimization strategies.}\n            \\item {Monolith Architecture Modernization - Rearchitected the ReviewPush monolith from a controller-transformer pattern to a Controller-Service-Transformer model.}\n            \\item {Testing Framework Overhaul - Implemented a comprehensive testing strategy that transformed the backend from sporadic, ad-hoc tests to a robust suite of unit and integration tests, improving release.}\n            \\item {FastPDF - Architected and deployed a Fastify microservice for generating production-grade PDF reports from complex HTML, CSS, and JavaScript pages, with comprehensive logging, health monitoring, OpenTelemetry-based observability, JWT.}\n        \\end{cvsubitems}\n        \\begin{cvitems}\n            \\item {Leadership - Owned architecture decisions, mentored engineers, and drove business-wide priorities with a focus on performance, reliability, and software quality.}\n        \\end{cvitems}\n    }\n\\end{cventries}\n",
+      "personalprojects.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{Personal Projects}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n  %---------------------------------------------------------\n  \\cventry\n  {} % Affiliation/role\n  {} % Organization/group\n  {} % Location\n  {} % Date(s)\n  {\n    \\vspace{-10mm}\n    \\begin{cvitems}\n      \\item {I take pride in programming as a craft and continuously strive to improve my skills with personal projects. With the rapid advancements in AI, I have been particularly focused on experimenting with various AI tools.}\n    \\end{cvitems}\n    \\begin{cvsubitems}\n      \\item {Getkan-CV - An intelligent r\u00e9sum\u00e9 builder that leverages content files and a custom agent to generate tailored CVs aligned with job listing requirements.}\n      \\item {Linux Enthusiast - I have a strong passion for the Linux operating system and enjoy exploring different distributions, experimenting with window managers and tiling.}\n    \\end{cvsubitems}\n  }\n\\end{cventries}\n",
+      "aboutme.tex": "%-------------------------------------------------------------------------------\n%\tSECTION TITLE\n%-------------------------------------------------------------------------------\n\\cvsection{About me}\n%-------------------------------------------------------------------------------\n%\tCONTENT\n%-------------------------------------------------------------------------------\n\\begin{cventries}\n  \\cventry\n  {} % Degree\n  {Georgetown University} % Institution\n  {Washington, D.C.} % Location\n  {Sept. 2013 - May. 2017} % Date(s)\n  {\n    \\vspace{-10mm}\n    \\begin{cvitems} % Description(s) of tasks/responsibilities\n      \\item {Bachelor of Arts in Computer Science, Bachelor of Arts in Economics.}\n    \\end{cvitems}\n  }\n  %---------------------------------------------------------\n  \\cventry\n  {} % Affiliation/role\n  {} % Organization/group\n  {} % Location\n  {} % Date(s)\n  {\n    \\vspace{-4mm}\n  }\n\\end{cventries}\n"
+    },
+    "recommendations": {
+      "positioning": [
+        "Prioritize bullets showing ownership, reliability, and cross-functional delivery impact."
+      ],
+      "project_suggestions": [
+        "Highlight projects touching CI/CD, information retrieval, related fields"
+      ],
+      "gap_analysis": [
+        "Add quantified outcomes (latency, uptime, delivery speed, or cost savings) where possible."
+      ]
+    }
+  },
+  "compile": {
+    "compile_log": "pass 1 exit=0\nf-dist/tex/generic/bitset/bitset.sty\n(/usr/share/texlive/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty)))\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hxetex.def\n(/usr/share/texlive/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty\n(/usr/share/texlive/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty))))\nNo file resume.aux.\n*geometry* driver: auto-detecting\n*geometry* detected driver: xetex\n\nPackage hyperref Warning: Rerun to get /PageLabels entry.\n\n\nOverfull \\hbox (1.46pt too wide) in paragraph at lines 70--71\n[]$[]$ $[]$$[]$\n\nUnderfull \\hbox (badness 10000) in paragraph at lines 70--71\n\n(./modules/summary.tex) (./modules/experience.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 20--51\n   [] \n) (./modules/personalprojects.tex) (./modules/aboutme.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 19--29\n   [] \n) [1] (./resume.aux)\n\nPackage rerunfilecheck Warning: File `resume.out' has changed.\n(rerunfilecheck)                Rerun to get outlines right\n(rerunfilecheck)                or use package `bookmark'.\n\n )\n(see the transcript file for additional information)\nOutput written on resume.pdf (1 page).\nTranscript written on resume.log.\n\npass 2 exit=0\nerref/pd1enc.def)\n(/usr/share/texlive/texmf-dist/tex/generic/intcalc/intcalc.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/puenc.def)\n(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty)\n(/usr/share/texlive/texmf-dist/tex/generic/bitset/bitset.sty\n(/usr/share/texlive/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty)))\n(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hxetex.def\n(/usr/share/texlive/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty\n(/usr/share/texlive/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty))))\n(./resume.aux)\n*geometry* driver: auto-detecting\n*geometry* detected driver: xetex\n(./resume.out) (./resume.out)\nOverfull \\hbox (1.46pt too wide) in paragraph at lines 70--71\n[]$[]$ $[]$$[]$\n\nUnderfull \\hbox (badness 10000) in paragraph at lines 70--71\n\n(./modules/summary.tex) (./modules/experience.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 20--51\n   [] \n) (./modules/personalprojects.tex) (./modules/aboutme.tex\nOverfull \\hbox (2.92001pt too wide) in paragraph at lines 19--29\n   [] \n) [1] (./resume.aux) )\n(see the transcript file for additional information)\nOutput written on resume.pdf (1 page).\nTranscript written on resume.log.\n",
+    "summary": "Tailoring completed and PDF compiled",
+    "pdf_path": "/home/getkan/Projects/personal/GETKAN-CV/output/vannevar-senior-software-engineer-search/vannevar-senior-software-engineer-search.pdf",
+    "page_count": 1
+  },
+  "compatibility_score": 6
+}

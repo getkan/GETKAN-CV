@@ -1,0 +1,38 @@
+{
+  "job": {
+    "title": "Senior ServiceNow Developer",
+    "company": "Riot Platforms, Inc.",
+    "location": "Austin, TX, USA",
+    "employment_type": "In Office",
+    "description": "Owns the architecture, design, development, integrations, and implementation of complex ServiceNow solutions. Configures platform components, establishes development standards, resolves complex issues, maintains Service Portal pages, and partners with stakeholders to deliver scalable, upgrade-safe solutions.",
+    "must_have": [
+      "JavaScript",
+      "ServiceNow administration",
+      "API integration experience",
+      "ITIL processes",
+      "Customer Service Management processes"
+    ],
+    "nice_to_have": [
+      "CSM",
+      "Asset Management",
+      "Nuvolo"
+    ],
+    "responsibilities": [
+      "Lead the architecture, design, and development of technical solutions on the ServiceNow platform.",
+      "Configure and customize advanced aspects of ServiceNow.",
+      "Design and build integrations between ServiceNow and other enterprise systems.",
+      "Establish and enforce development standards through code reviews.",
+      "Serve as the technical escalation point for complex platform issues.",
+      "Create and maintain Service Portal pages using HTML, CSS, and AngularJS."
+    ],
+    "domain": "Information Technology"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-servicenow-developer/10921972",
+    "parsed_at": "2026-09-04T16:28:20.313395+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

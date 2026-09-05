@@ -1,0 +1,62 @@
+{
+  "job": {
+    "title": "Senior Software Engineer",
+    "company": "Striveworks",
+    "location": "Austin, Texas, USA",
+    "employment_type": "Remote Or Hybrid",
+    "description": "As a Senior Software Engineer, you will develop, deploy, and maintain production ML models, lead projects, and collaborate across teams using various programming languages and tools.",
+    "must_have": [
+      "Excellence in Go",
+      "C++",
+      "Java",
+      "C#",
+      "Rust",
+      "Python",
+      "Git",
+      "Docker",
+      "Kubernetes",
+      "cloud architecture commercial cloud",
+      "OpenStack",
+      "the design",
+      "development of performant",
+      "scalable services",
+      "architecture relational",
+      "non-relational",
+      "work cross-functionally",
+      "participate in",
+      "lead design discussions",
+      "design patterns",
+      "documentation",
+      "a US national",
+      "a Green Card holder"
+    ],
+    "nice_to_have": [
+      "concurrency",
+      "PyTorch",
+      "TensorFlow",
+      "gRPC",
+      "GraphQL APIs",
+      "distributed computing",
+      "NATS",
+      "Kafka",
+      "RabbitMQ",
+      "workflow automation"
+    ],
+    "responsibilities": [
+      "Develop, deploy, and maintain production ML models",
+      "Lead projects and collaborate across teams",
+      "Write quality code in Go and Python",
+      "Participate in design discussions and provide technical expertise",
+      "Mentor and coach junior engineers"
+    ],
+    "domain": "Artificial Intelligence"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer/4005302",
+    "parsed_at": "2026-09-04T16:28:44.004989+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

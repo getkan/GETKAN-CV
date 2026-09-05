@@ -1,0 +1,49 @@
+{
+  "job": {
+    "title": "Sr. Engineering Manager - Payments",
+    "company": "Cedar",
+    "location": "Remote",
+    "employment_type": "Senior Level",
+    "description": "Lead two Payments engineering teams through platform modernization, including decoupling payment capabilities from business logic, improving observability, performance, reliability, and operational health. Manage engineering managers and individual contributors, guide technical direction with senior engineers, own third-party payment integrations, and partner with Product and Commercial on payment capabilities and priorities. Drive cross-team initiatives, develop talent, and balance product delivery with foundational architecture investments.",
+    "must_have": [
+      "Experience managing managers",
+      "their performance",
+      "reliability",
+      "operational health",
+      "especially with Product",
+      "experimenting",
+      "investing in foundational quality",
+      "Clear",
+      "proactive communication",
+      "tradeoffs",
+      "competing priorities",
+      "engineering managers",
+      "Excitement about Cedar\u2019s mission"
+    ],
+    "nice_to_have": [
+      "payments",
+      "fintech",
+      "a closely related domain",
+      "Experience modernizing",
+      "Experience supporting agentic",
+      "AI-enabled workflows at scale"
+    ],
+    "responsibilities": [
+      "Partner with staff and principal engineers to lead the Payments Pillar through the evolution of Cedar\u2019s Payments architecture, including decoupling payment capabilities from business logic.",
+      "Lead, coach and develop Engineering Managers and individual contributors across the Payments Pillar.",
+      "Establish and improve the metrics and instrumentation used to understand performance across payment features and workflows.",
+      "Partner with Product and Commercial to balance new payment capabilities and performance improvements with foundational architecture and operational investments.",
+      "Own the engineering relationship and technical outcomes for third-party payment vendor integrations.",
+      "Identify opportunities to and lead initiatives that enable multiple teams to deliver results more effectively."
+    ],
+    "domain": "Fintech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/sr-engineering-manager-payments/10933856",
+    "parsed_at": "2026-09-04T15:29:02.511634+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

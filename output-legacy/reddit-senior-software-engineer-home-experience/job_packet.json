@@ -1,0 +1,47 @@
+{
+  "job": {
+    "title": "Senior Software Engineer, Home Experience",
+    "company": "Reddit",
+    "location": "Remote - United States",
+    "employment_type": "",
+    "description": "Reddit is a community of communities. It\u2019s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 130 million daily active unique visitors, Reddit is one of the internet\u2019s largest sources of information. The Home Experience team is responsible for one of the highest traffic pages on the platform: the Feed pages on the Reddit apps and website. Feeds are both a destination and entry point for almost all Reddit journeys, and we know a smooth, intuitive, and delightful experience is critical to Reddit\u2019s success and appeal.",
+    "must_have": [
+      "HEX",
+      "Firebase",
+      "Go",
+      "Swift",
+      "Kotlin",
+      "Rust",
+      "C#",
+      "organizational skills",
+      "the ability to breakdown",
+      "prioritize tasks for yourself",
+      "usability"
+    ],
+    "nice_to_have": [
+      "ML engineering teams",
+      "integrating ML solutions",
+      "innovative",
+      "biased towards action"
+    ],
+    "responsibilities": [
+      "Work cross-functionally, collaborate and partner with product, design, and other engineering counterparts to build novel products and features that our users will love.",
+      "Work alongside a team of thoughtful, fast-moving, and motivated engineers.",
+      "Contribute to standards that improve developer workflows, recommend best practices, and help mentor engineers on the team to grow their technical expertise.",
+      "Own the full development cycle for major projects: design, development, test, experimentation, analysis, and launch.",
+      "Write and review code and design docs, give feedback on product specs and mocks, and ensure successful delivery of these key projects.",
+      "Drive the planning, development, and implementation across Reddit\u2019s backend service architecture in service of our native mobile and web clients.",
+      "Enable a culture of metrics led execution, with a focus on operational excellence and system observability.",
+      "Partner with leadership and cross-functional partners to develop the right roadmap that best achieves our product and engineering goals."
+    ],
+    "domain": "Software Engineering"
+  },
+  "metadata": {
+    "source_url": "https://job-boards.greenhouse.io/reddit/jobs/8155661",
+    "parsed_at": "2026-09-04T16:53:26.162107+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

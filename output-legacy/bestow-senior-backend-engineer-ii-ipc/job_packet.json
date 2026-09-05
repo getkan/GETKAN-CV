@@ -1,0 +1,45 @@
+{
+  "job": {
+    "title": "Senior Backend Engineer II - IPC",
+    "company": "Bestow",
+    "location": "Remote or Hybrid (Hiring Remotely in US)",
+    "employment_type": "Senior Level",
+    "description": "Design, build, and operate backend services for Bestow\u2019s insurance platform using Python, Go, Java, and PostgreSQL. Collaborate on technical decisions, integrations, carrier onboarding, and scalable platform capabilities. Mentor engineers through reviews and pairing, improve production reliability and observability, participate in on-call support, and communicate technical decisions in a remote-first environment. Use agentic AI coding tools daily and help establish effective AI-assisted development practices.",
+    "must_have": [
+      "Go",
+      "distributed systems",
+      "Microservices",
+      "API design Protocol Buffers",
+      "OpenAPI",
+      "PostgreSQL",
+      "Docker",
+      "GCP",
+      "deploying",
+      "Write maintainable",
+      "well-tested software"
+    ],
+    "nice_to_have": [
+      "Cursor",
+      "Copilot in daily workflow"
+    ],
+    "responsibilities": [
+      "Contribute to technical design decisions for IPC services, balancing delivery speed with long-term maintainability",
+      "Design, build, and operate backend services using Python, PostgreSQL, Go, and Java-based Drools rules engine",
+      "Partner with other Bestow engineering teams on integration work across platform",
+      "Help build platform capabilities that scale with Bestow's growing partner ecosystem",
+      "Mentor engineers through code review, design review, and pairing",
+      "Support production reliability: help maintain/improve SLOs, strengthen observability, share on-call for IPC workloads",
+      "Use agentic AI coding tools as core part of workflow, help team adopt effective AI-assisted development practices",
+      "Communicate technical decisions, trade-offs, and status clearly in writing"
+    ],
+    "domain": "Insurance Technology"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-backend-engineer-ii-ipc/10990549",
+    "parsed_at": "2026-09-04T15:28:33.937246+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

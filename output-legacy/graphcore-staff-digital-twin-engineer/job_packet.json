@@ -1,0 +1,49 @@
+{
+  "job": {
+    "title": "Staff Digital Twin Engineer",
+    "company": "Graphcore",
+    "location": "Austin, TX, USA",
+    "employment_type": "Hybrid",
+    "description": "We are looking for a Staff Digital Twin Engineer to help design, build and evolve digital twin capabilities that support the development, validation and operation of advanced AI compute systems.",
+    "must_have": [
+      "Electrical",
+      "Systems Engineering",
+      "simulation",
+      "controls",
+      "OpenUSD",
+      "USD concepts",
+      "data center operations",
+      "C++",
+      "both"
+    ],
+    "nice_to_have": [
+      "rack",
+      "blade design concepts",
+      "Experience modeling thermal",
+      "power",
+      "containerized deployment",
+      "3D asset pipelines",
+      "rendering"
+    ],
+    "responsibilities": [
+      "Apply MBSE methodologies to drive the development of systems",
+      "Develop and deploy simulation logic and behavioral models",
+      "Implement real-time simulation algorithms",
+      "Develop robust scene composition and data modeling approaches",
+      "Create high-fidelity 3D models in Omniverse",
+      "Collaborate across engineering to ensure interoperability",
+      "Support testing, debugging, performance analysis",
+      "Establish engineering best practices for OpenUSD schemas",
+      "Provide technical guidance and mentoring to engineers"
+    ],
+    "domain": "Artificial Intelligence, Semiconductor"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/staff-digital-twin-engineer/9685100",
+    "parsed_at": "2026-09-04T16:30:33.051183+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

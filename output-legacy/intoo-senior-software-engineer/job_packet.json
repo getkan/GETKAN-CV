@@ -1,0 +1,53 @@
+{
+  "job": {
+    "title": "Senior Software Engineer",
+    "company": "INTOO",
+    "location": "Austin",
+    "employment_type": "Senior Level",
+    "description": "INTOO is a fast-growing HR technology solutions provider seeking a highly experienced, hands-on Senior Software Engineer. This is an individual contributor role with significant ownership over technical execution, system reliability, and architectural direction. You\u2019ll operate across the stack, lead by example, and mentor engineers while driving high-impact initiatives.",
+    "must_have": [
+      "equivalent",
+      "Extensive experience configuring"
+    ],
+    "nice_to_have": [
+      "Expert-level JavaScript",
+      "modern frontend development React",
+      "Stimulus",
+      "automated testing",
+      "ci cd pipelines",
+      "network",
+      "cloud security best practices",
+      "alerting",
+      "observability tooling",
+      "MA office",
+      "Experience implementing",
+      "NIST",
+      "ISO 27001",
+      "Scrum",
+      "Redis",
+      "other NoSQL data stores",
+      "SAML",
+      "Additional language fluency Italian",
+      "French",
+      "Spanish"
+    ],
+    "responsibilities": [
+      "Own and deliver complex technical systems and critical workflows end-to-end",
+      "Ensure production reliability, performance, and security across the platform",
+      "Lead and influence architectural decisions with a focus on long-term maintainability",
+      "Communicate complex technical and business concepts effectively to technical and non-technical stakeholders",
+      "Mentor and coach engineers at all skill levels",
+      "Drive incident response and continuous improvement of system health and processes",
+      "Continuously assess industry trends, risks and identify areas for improvement"
+    ],
+    "domain": "HR Technology"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer/10893936",
+    "parsed_at": "2026-09-04T15:29:51.564838+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

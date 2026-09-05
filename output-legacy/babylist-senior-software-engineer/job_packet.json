@@ -1,0 +1,37 @@
+{
+  "job": {
+    "title": "Senior Software Engineer",
+    "company": "Babylist",
+    "location": "Austin, Texas, USA",
+    "employment_type": "Remote Or Hybrid",
+    "description": "As a Senior Software Engineer at Babylist, you will develop systems for a high-volume marketplace, collaborating on advertising, commerce features, and infrastructure while leading projects and improving processes with AI-driven methodologies.",
+    "must_have": [
+      "work on ambiguous problems"
+    ],
+    "nice_to_have": [
+      "AI & machine learning",
+      "Rails",
+      "Packwerk",
+      "React",
+      "TypeScript",
+      "Kubernetes",
+      "Terraform"
+    ],
+    "responsibilities": [
+      "Own problems, not just features.",
+      "Decide what to build, ship it and own whether it worked.",
+      "Frame the problem with PM as a peer.",
+      "Run experiments and bring customer evidence into development.",
+      "Manage up with crisp choices about risks and tradeoffs."
+    ],
+    "domain": "eCommerce, Healthtech, Kids & Family"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer/9237623",
+    "parsed_at": "2026-09-04T15:48:42.893061+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

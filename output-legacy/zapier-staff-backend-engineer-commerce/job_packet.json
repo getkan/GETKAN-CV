@@ -1,0 +1,38 @@
+{
+  "job": {
+    "title": "Staff Backend Engineer, Commerce",
+    "company": "Zapier",
+    "location": "Austin, Remote",
+    "employment_type": "Full Time",
+    "description": "As a Staff Engineer for Revenue, you'll shape technical vision and architecture for billing and pricing systems, ensuring correctness while enhancing cross-team collaboration.",
+    "must_have": [
+      "engineering impact in complex",
+      "subscription management",
+      "payment processing",
+      "financial platforms",
+      "performance optimization"
+    ],
+    "nice_to_have": [
+      "AI coding tools",
+      "Comfort with large",
+      "mature codebases"
+    ],
+    "responsibilities": [
+      "Shape the long-term platform vision for the Commerce Zone",
+      "Lead high-impact technical initiatives focused on monetization infrastructure",
+      "Own and strengthen revenue-critical systems like Billing and Payments",
+      "Guide high-impact technical decisions regarding API design and system architecture",
+      "Collaborate across teams to enhance customer experiences and drive ARR growth",
+      "Mentor engineers and raise the technical bar"
+    ],
+    "domain": "Billing/Payments/Monetization"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/staff-engineer-backend-revenue/9200243",
+    "parsed_at": "2026-09-04T15:50:13.711773+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

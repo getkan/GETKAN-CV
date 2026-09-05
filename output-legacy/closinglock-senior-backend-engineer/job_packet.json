@@ -1,0 +1,45 @@
+{
+  "job": {
+    "title": "Senior Backend Engineer",
+    "company": "Closinglock",
+    "location": "Austin, TX, USA",
+    "employment_type": "In Office",
+    "description": "Design, develop, and maintain high-performance, scalable backend services and RESTful APIs. Participate across the full software development lifecycle, ship features quickly, collaborate with small teams, integrate third-party APIs, ensure test coverage and CI/CD, and monitor applications in AWS.",
+    "must_have": [
+      "FastAPI",
+      "Django",
+      "Relational Databases",
+      "query optimization",
+      "ORMs",
+      "continuous integration",
+      "software testing",
+      "TDD",
+      "Unit Testing",
+      "containerization technologies like Docker",
+      "Jira",
+      "Confluence",
+      "New Relic"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "AI",
+      "CI/CD"
+    ],
+    "responsibilities": [
+      "Work with small teams - onboard your first week, ship changes during your second",
+      "Actively participate in the design, development, and maintenance of Closinglock web applications, ensuring high performance, responsiveness, and scalability",
+      "Contribute to the full software development lifecycle, from concept and design to testing and deployment",
+      "Consult on efforts regarding feature requests, feedback, and future product development for the business"
+    ],
+    "domain": "Fintech, Real Estate, Security, Software, Financial Services, Cybersecurity, PropTech"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-backend-engineer/10271023",
+    "parsed_at": "2026-09-04T16:29:52.496851+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

@@ -1,0 +1,47 @@
+{
+  "job": {
+    "title": "Senior Software Engineer, Search",
+    "company": "Vannevar",
+    "location": "Remote, USA",
+    "employment_type": "Senior Level",
+    "description": "Design and lead the technical strategy for search across Vannevar\u2019s products. Build and improve full-text, vector, and LLM-powered retrieval systems, optimizing latency, relevance, index quality, freshness, and performance. Collaborate with ML, product, design, and mission strategy teams to translate user needs into search innovations.",
+    "must_have": [
+      "information retrieval",
+      "related fields",
+      "NLP",
+      "Machine Learning",
+      "ranking",
+      "query parsing",
+      "tokenization",
+      "vector search",
+      "Elasticsearch",
+      "OpenSearch",
+      "precision",
+      "recall",
+      "NDCG",
+      "Excellent analytical"
+    ],
+    "nice_to_have": [
+      "Go",
+      "Rust",
+      "Machine Learning",
+      "AI",
+      "CI/CD"
+    ],
+    "responsibilities": [
+      "Design and adapt the technical strategy for search within Vannevar\u2019s products",
+      "Improve search latency and relevance",
+      "Collaborate with product engineers, designers, and mission strategists to translate user needs into data-informed search innovations",
+      "Research and apply emerging technologies, trends and best practices in the search/information retrieval domain"
+    ],
+    "domain": "Artificial Intelligence, Machine Learning, Software, Defense"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer-search/10920818",
+    "parsed_at": "2026-09-04T15:29:13.319249+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

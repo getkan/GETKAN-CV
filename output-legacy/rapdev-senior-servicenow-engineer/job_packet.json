@@ -1,0 +1,40 @@
+{
+  "job": {
+    "title": "Senior ServiceNow Engineer",
+    "company": "RapDev",
+    "location": "Austin, United States",
+    "employment_type": "Remote Or Hybrid",
+    "description": "Develop and maintain software applications on the ServiceNow platform, perform integrations, troubleshoot issues, and communicate with clients.",
+    "must_have": [
+      "ServiceNow"
+    ],
+    "nice_to_have": [
+      "Cloud-Native implementations of Discovery",
+      "ServiceMapping",
+      "AIOps"
+    ],
+    "responsibilities": [
+      "Develop quality software and web applications",
+      "Analyze and maintain existing software applications",
+      "Design highly scalable, testable code",
+      "Discover and fix programming bugs",
+      "3rd party integration development (REST, SOAP, mid servers, etc)",
+      "Write/create custom business rules, client scripts, script includes, UI policies, ACL\u2019s, UI scripts",
+      "Work independently with customers on implementations and remote services",
+      "Troubleshoot basic configuration/script issues",
+      "Attend requirements review and validation sessions as needed",
+      "Participate in SCRUM calls",
+      "Utilize strong written and verbal communication skills",
+      "Stay on time and on task with assigned customer work"
+    ],
+    "domain": "Information Technology"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-servicenow-developer/7910517",
+    "parsed_at": "2026-09-04T15:30:07.232140+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

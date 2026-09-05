@@ -1,0 +1,38 @@
+{
+  "job": {
+    "title": "Sr Software Engineer - Basis Platform / DSP",
+    "company": "Basis",
+    "location": "Austin, United States",
+    "employment_type": "In Office Or Remote",
+    "description": "Responsible for building new products, updating existing offerings, leading projects, mentoring, and ensuring quality and alignment in technical implementation. Collaborate with teams to drive projects from ideation to production.",
+    "must_have": [
+      "scaling modern",
+      "debugging",
+      "exploring",
+      "documentation",
+      "system design",
+      "Enthusiastic growth-oriented mindset"
+    ],
+    "nice_to_have": [
+      "Engineering",
+      "Spring Boot",
+      "Quarkus"
+    ],
+    "responsibilities": [
+      "Build net-new Basis Platform features",
+      "Develop integrations that bridge Basis Platform and DSP",
+      "Extend existing feature sets for customers",
+      "Lead projects end-to-end across our stack",
+      "Demonstrate strong partnerships and communication skills through pull requests, demos, and working relationships"
+    ],
+    "domain": "Ad-Tech, Digital Media, Software, Automation"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/sr-software-engineer-applications/9187776",
+    "parsed_at": "2026-09-04T15:48:34.332924+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}

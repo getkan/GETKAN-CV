@@ -1,0 +1,43 @@
+{
+  "job": {
+    "title": "Senior Software Engineer - React Native",
+    "company": "DaySmart Software, Inc.",
+    "location": "Austin, TX, USA",
+    "employment_type": "Hybrid",
+    "description": "We are looking for a Senior React Native Engineer to join our team. The position will lead the development of new features and maintain the existing codebase that helps tackle challenging and important problems impacting thousands of local pet care providers who rely on Time To Pet to run their business in real time.",
+    "must_have": [
+      "Software Engineering",
+      "Exposure",
+      "Expo",
+      "communication",
+      "analytical",
+      "decision-making skills",
+      "Driven"
+    ],
+    "nice_to_have": [
+      "native iOS",
+      "native Android development",
+      "Apple stores",
+      "Knowledge of"
+    ],
+    "responsibilities": [
+      "Design and develop high-quality new features with a focus on scalability, reliability, and performance.",
+      "Maintain the existing code base by fixing bugs and making improvements as needed.",
+      "Collaborate with development team to ensure the successful delivery of software features and updates.",
+      "Write clean, maintainable, and testable code, with a focus on best practices and coding standards.",
+      "Map real-world customer issues to product solutions.",
+      "Participate in code reviews, design discussions, and other collaborative activities to ensure the quality and consistency of our codebase.",
+      "Contribute to the development of our technical roadmap, with a focus on innovation, efficiency, and growth.",
+      "Stay current with the latest trends and best practices in mobile application development, and continuously improve your skills and knowledge."
+    ],
+    "domain": "SaaS, Mobile Application Development"
+  },
+  "metadata": {
+    "source_url": "https://www.builtinaustin.com/job/senior-software-engineer-react-native/10755244",
+    "parsed_at": "2026-09-04T16:29:15.213324+00:00",
+    "confidence": 1.0,
+    "field_attribution": {},
+    "validation_errors": []
+  },
+  "compatibility_score": 6
+}
