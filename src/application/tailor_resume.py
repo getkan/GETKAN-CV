@@ -46,7 +46,6 @@ DEFAULT_PROMPTS: dict[str, str] = {
         "Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus"
     ),
     "aboutme_section_prompt": "Always include required education facts in About Me.",
-    "aboutme_required_items": "Bachelor of Arts in Computer Science||Bachelor of Arts in Economics",
 }
 
 _ENV_TOKEN_PATTERN = re.compile(r"\$\{([A-Z0-9_]+)\}")
