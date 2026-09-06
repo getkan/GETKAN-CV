@@ -82,9 +82,6 @@ user-editable JSON files under `src/*/`.
 
 - `OPENROUTER_API_KEY` is read from the environment or a local `.env` and must
   never be written to `output/` or `log/`.
-- Personal identity fields (`RESUME_ADDRESS`, `RESUME_MOBILE`, `RESUME_EMAIL`)
-  are injected at render time from environment variables, not committed in the
-  base resume.
 - Listing URLs are user-supplied and fetched as untrusted content; extracted
   text is only used as model input and packet data, never executed.
 

@@ -184,9 +184,6 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
 OPENROUTER_MODEL_PARSER=openai/gpt-4o-mini
 OPENROUTER_MODEL_TAILOR=anthropic/claude-3.7-sonnet
 OPENROUTER_MODEL_ADVISOR=openai/gpt-4.1-mini
-RESUME_ADDRESS=123 Main St, Austin, TX 78701
-RESUME_MOBILE=(+1) 555-555-5555
-RESUME_EMAIL=your.email@example.com
 ```
 
 Model resolution order is:
@@ -194,12 +191,6 @@ Model resolution order is:
 - Parser: `OPENROUTER_MODEL_PARSER` -> `OPENROUTER_MODEL` -> built-in default
 - Tailor: `--model` CLI override -> `OPENROUTER_MODEL_TAILOR` -> `OPENROUTER_MODEL` -> `anthropic/claude-3.7-sonnet`
 - Advisor: `--model` CLI override -> `OPENROUTER_MODEL_ADVISOR` -> `OPENROUTER_MODEL` -> `openai/gpt-4.1-mini`
-
-Resume template identity placeholders resolve from env vars:
-
-- `RESUME_ADDRESS`
-- `RESUME_MOBILE`
-- `RESUME_EMAIL`
 
 Parser, tailoring, and advisor prompts live in `src/infrastructure/prompts.json` under the `parser`, `tailor`, and `advisor` keys.
 Common keys:
