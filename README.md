@@ -128,10 +128,23 @@ For each tailored run, TeX files are copied/generated into:
 
 - Python 3.10+ (recommended)
 - `xelatex` (XeTeX distribution) — required for PDF compilation
-  - On Ubuntu/Debian: `sudo apt install texlive-xetex`
-  - On Fedora: `sudo dnf install texlive-xetex`
-  - On macOS: `brew install mactex` or `brew install basictex` + `tlmgr install collection-xetex`
+- `latexmk` — required for terminal and VS Code builds
 - Optional but recommended: `pdfinfo` (for page count metadata)
+
+Install the full LaTeX toolchain with the platform scripts:
+
+```bash
+# Linux and macOS
+./scripts/install-latex.sh
+```
+
+```powershell
+# Windows (elevated PowerShell)
+powershell -ExecutionPolicy Bypass -File scripts\install-latex.ps1
+```
+
+See [docs/LATEX_SETUP.md](docs/LATEX_SETUP.md) for the full dependency list,
+manual per-distribution commands, verification steps, and troubleshooting.
 
 ### API & Environment
 
