@@ -36,6 +36,7 @@ output/
 
 ## IDE & Environment
 .vscode/*
+GETKAN-CV.code-workspace
 .github/
 
 ## Logs & Temporary files
