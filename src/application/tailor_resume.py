@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, TypedDict
 
+from src.infrastructure.latex import render_env_placeholders as _render_env_placeholders
 from src.infrastructure.openrouter import post_json_schema
 from src.infrastructure.prompt_config import load_prompt_config
 
@@ -48,38 +49,8 @@ DEFAULT_PROMPTS: dict[str, str] = {
     "aboutme_section_prompt": "Always include required education facts in About Me.",
 }
 
-_ENV_TOKEN_PATTERN = re.compile(r"\$\{([A-Z0-9_]+)\}")
-
-
-def _load_env_values() -> dict[str, str]:
-    values: dict[str, str] = dict(os.environ)
-    repo_root = Path(__file__).resolve().parents[2]
-    dotenv_candidates = [Path.cwd() / ".env", repo_root / ".env"]
-
-    for env_path in dotenv_candidates:
-        if not env_path.exists():
-            continue
-        try:
-            lines = env_path.read_text(encoding="utf-8").splitlines()
-        except OSError:
-            continue
-        for line in lines:
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#") or "=" not in stripped:
-                continue
-            key, value = stripped.split("=", 1)
-            values.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-    return values
-
-
 def render_env_placeholders(text: str) -> str:
-    env_values = _load_env_values()
-
-    def _replace(match: re.Match[str]) -> str:
-        key = match.group(1)
-        return env_values.get(key, match.group(0))
-
-    return _ENV_TOKEN_PATTERN.sub(_replace, text)
+    return _render_env_placeholders(text, Path(__file__).resolve().parents[2])
 
 
 def _load_prompt_config() -> dict[str, str]:

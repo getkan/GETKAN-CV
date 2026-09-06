@@ -20,6 +20,7 @@ if __package__ in {None, ""}:
 
 from src.application.advise import generate_job_hunt_recommendations
 from src.application.tailor_resume import build_tailored_payload, recompile_existing_output, render_env_placeholders
+from src.infrastructure.environment import load_dotenv
 
 
 class StatusSpinner:
@@ -124,24 +125,11 @@ def load_urls_from_file(list_file_path: str) -> list[str]:
     return urls
 
 
-def _load_dotenv() -> None:
-    env_path = Path.cwd() / ".env"
-    if not env_path.exists():
-        return
-
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
 def _resolve_model_for_role(role: str, cli_override: Optional[str]) -> Optional[str]:
     if cli_override:
         return cli_override
 
-    _load_dotenv()
+    load_dotenv(Path.cwd() / ".env")
     role_key = f"OPENROUTER_MODEL_{role.upper()}"
     return os.getenv(role_key) or os.getenv("OPENROUTER_MODEL") or ROLE_DEFAULT_MODELS.get(role.upper())
 

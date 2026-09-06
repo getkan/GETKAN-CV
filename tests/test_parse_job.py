@@ -19,7 +19,6 @@ from unittest.mock import patch
 from src.application.parse_job import parse_job
 from src.application.parse_job import (
     JobParserState,
-    _load_dotenv,
     extract_facts,
     fetch_or_load_listing,
     handoff_to_tailor,
@@ -27,6 +26,7 @@ from src.application.parse_job import (
     validate_packet,
 )
 from src.application.parse_job import calculate_compatibility_score
+from src.infrastructure.environment import load_dotenv
 
 
 class ParseJobTests(unittest.TestCase):
@@ -152,7 +152,7 @@ class ParseJobTests(unittest.TestCase):
             env_path = Path(tmpdir) / ".env"
             env_path.write_text("OPENROUTER_API_KEY=test-key\n", encoding="utf-8")
             os.environ.pop("OPENROUTER_API_KEY", None)
-            _load_dotenv(env_path)
+            load_dotenv(env_path)
             self.assertEqual(os.environ["OPENROUTER_API_KEY"], "test-key")
             os.environ.pop("OPENROUTER_API_KEY", None)
 

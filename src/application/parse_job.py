@@ -10,6 +10,7 @@ from typing import Any, TypedDict
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from src.infrastructure.environment import load_dotenv
 from src.infrastructure.openrouter import post_json_schema
 from src.infrastructure.prompt_config import load_prompt_config
 
@@ -662,8 +663,8 @@ def extract_facts(state: JobParserState) -> JobParserState:
         "location": _clean_unknown(str(merged_payload.get("location") or "")),
         "employment_type": _normalize_employment_type(str(merged_payload.get("employment_type") or "")),
         "description": _clean_unknown(str(merged_payload.get("description") or "")),
-        "must_have": _normalize_skill_items(merged_payload.get("must_have") or []),
-        "nice_to_have": _normalize_skill_items(merged_payload.get("nice_to_have") or []),
+        "must_have": normalize_skill_items(merged_payload.get("must_have") or []),
+        "nice_to_have": normalize_skill_items(merged_payload.get("nice_to_have") or []),
         "responsibilities": _clean_list(merged_payload.get("responsibilities") or []),
         "domain": _clean_unknown(str(merged_payload.get("domain") or "")),
     }
@@ -747,7 +748,7 @@ def calculate_packet_compatibility_score(state: JobParserState) -> JobParserStat
 
 
 # Skill Normalization & Cleaning Helpers
-def clean_unknown(value: object) -> str:
+def _clean_unknown(value: object) -> str:
     if not isinstance(value, str):
         return ""
     cleaned = re.sub(r"\s+", " ", value).strip()
@@ -757,7 +758,7 @@ def clean_unknown(value: object) -> str:
 
 
 def normalize_skill_item(item: str) -> str:
-    cleaned = clean_unknown(item)
+    cleaned = _clean_unknown(item)
     if not cleaned:
         return ""
 
@@ -795,7 +796,7 @@ def normalize_skill_items(items: list[str] | None) -> list[str]:
     seen: set[str] = set()
 
     for raw in items or []:
-        cleaned = clean_unknown(str(raw))
+        cleaned = _clean_unknown(str(raw))
         if not cleaned:
             continue
 
@@ -808,19 +809,6 @@ def normalize_skill_items(items: list[str] | None) -> list[str]:
                 normalized.append(normalized_item)
 
     return [item for item in normalized if item and re.search(r"[A-Za-z0-9]", item)]
-
-
-_normalize_skill_items = normalize_skill_items
-
-
-def _clean_unknown(value: Any) -> str:
-    if not isinstance(value, str):
-        return ""
-    cleaned = re.sub(r"\s+", " ", value).strip()
-    if cleaned.lower() in {"unknown", "unavailable", "n/a", "na", "none", "null"}:
-        return ""
-    return cleaned
-
 
 def _clean_list(items: list[str] | None) -> list[str]:
     deduped: list[str] = []
@@ -984,7 +972,7 @@ def _llm_adjust_score(
     job_packet: dict[str, Any],
     model_name: str | None = None,
 ) -> int:
-    _load_dotenv()
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         return baseline_score
@@ -1034,19 +1022,6 @@ def _contains_keyword(text: str, keyword: str) -> bool:
 
 
 # LLM & Prompt Loading Helpers
-def _load_dotenv(env_path: str | Path | None = None) -> None:
-    path = Path(env_path) if env_path else Path(__file__).resolve().parents[2] / ".env"
-    if not path.exists():
-        return
-
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
 def _load_parser_prompts() -> dict[str, str]:
     return load_prompt_config(PROMPT_CONFIG_PATH, DEFAULT_PARSER_PROMPTS, section="parser")
 
@@ -1103,7 +1078,7 @@ def _extract_json_payload(content: Any) -> dict[str, Any] | None:
 
 
 def _parse_job_with_openrouter(listing_text: str, source: dict[str, Any] | None = None) -> dict[str, Any]:
-    _load_dotenv()
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY is not configured")
@@ -1362,8 +1337,8 @@ def _heuristic_fallback(text: str) -> dict[str, Any]:
         "location": _clean_unknown(location),
         "employment_type": employment_type,
         "description": _clean_unknown(description),
-        "must_have": _normalize_skill_items(must_have),
-        "nice_to_have": _normalize_skill_items(nice_to_have),
+        "must_have": normalize_skill_items(must_have),
+        "nice_to_have": normalize_skill_items(nice_to_have),
         "responsibilities": _clean_list(responsibilities),
         "domain": "",
     }

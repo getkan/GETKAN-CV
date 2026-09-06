@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.infrastructure.environment import load_dotenv
 from src.infrastructure.openrouter import post_json_schema
 from src.infrastructure.prompt_config import load_prompt_config
 
@@ -13,7 +14,7 @@ RESUME_MODULE_NAMES = ("summary.tex", "experience.tex", "personalprojects.tex", 
 PROMPT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "infrastructure" / "prompts.json"
 
 
-def normalize_text(value: str) -> str:
+def _normalize_skill(value: str) -> str:
     cleaned = re.sub(r"\s+", " ", value or "").strip()
     cleaned = re.sub(r"^[\-\*\d\.)\(\s]+", "", cleaned)
     cleaned = cleaned.strip(" ,.;:")
@@ -22,11 +23,11 @@ def normalize_text(value: str) -> str:
 
 def _section_paragraph(summary: str, advice: str) -> str:
     parts: list[str] = []
-    summary_text = normalize_text(summary)
+    summary_text = _normalize_skill(summary)
     if summary_text:
         parts.append(f"Summary: {summary_text}.")
 
-    advice_text = normalize_text(advice)
+    advice_text = _normalize_skill(advice)
     if advice_text:
         parts.append(f"Advice: {advice_text}.")
 
@@ -46,93 +47,13 @@ def render_general_advice_section(*, summary: str, general_advice: str) -> dict[
     }
 
 
-def _unique_skills(skills: list[str]) -> list[str]:
-    seen: set[str] = set()
-    unique: list[str] = []
-    for skill in skills:
-        cleaned = normalize_text(skill)
-        if not cleaned:
-            continue
-        key = cleaned.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(cleaned)
-    return unique
-
-
-def _count_skill_mentions(skill: str, packets: list[dict[str, Any]]) -> dict[str, int]:
-    normalized_skill = normalize_text(skill).lower()
-    must_have_count = 0
-    good_to_have_count = 0
-
-    for payload in packets:
-        job = payload.get("job", {}) if isinstance(payload, dict) else {}
-        must_have_items = {normalize_text(str(item)).lower() for item in (job.get("must_have") or []) if normalize_text(str(item))}
-        nice_to_have_items = {normalize_text(str(item)).lower() for item in (job.get("nice_to_have") or []) if normalize_text(str(item))}
-
-        if normalized_skill in must_have_items:
-            must_have_count += 1
-        if normalized_skill in nice_to_have_items:
-            good_to_have_count += 1
-
-    return {
-        "skill": normalize_text(skill),
-        "must_haves": must_have_count,
-        "good_to_haves": good_to_have_count,
-    }
-
-
-def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
-    lines = ["## Skills", "", "| Skill | Must Haves | Good To Haves |", "| --- | ---: | ---: |"]
-    if not skill_rows:
-        lines.append("| None identified | 0 | 0 |")
-        return lines
-    
-    filtered_rows = [row for row in skill_rows if row["must_haves"] > 0][:20]
-
-    for row in filtered_rows:
-        lines.append(f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} |")
-    return lines
-
-
-def render_recommend_skills_section(*, skill_rows: list[dict[str, int]], skills: list[str] | None = None) -> dict[str, Any]:
+def render_recommend_skills_section(*, skill_rows: list[dict[str, int]]) -> dict[str, Any]:
+    rendered_rows = _qualifying_skill_rows(skill_rows)
     return {
         "heading": "## Skills",
         "lines": _skill_table_lines(skill_rows),
-        "skills": skills or [row["skill"] for row in skill_rows],
-        "skill_rows": skill_rows,
+        "skills": [str(row["skill"]) for row in rendered_rows],
     }
-
-
-def parse_skill_rows_from_table_lines(lines: list[str]) -> list[dict[str, int]]:
-    skill_rows: list[dict[str, int]] = []
-    for line in lines:
-        if not line.startswith("| ") or line.startswith("| Skill") or line.startswith("| ---") or line.startswith("| None identified"):
-            continue
-        parts = [part.strip() for part in line.strip("|").split("|")]
-        if len(parts) != 3:
-            continue
-        skill_rows.append(
-            {
-                "skill": parts[0],
-                "must_haves": int(parts[1]),
-                "good_to_haves": int(parts[2]),
-            }
-        )
-    return skill_rows
-
-
-def _bullet_lines(items: list[str], heading: str, placeholder: str) -> list[str]:
-    lines = [heading, ""]
-    if not items:
-        lines.append(f"- {placeholder}")
-        return lines
-    for item in items:
-        text = normalize_text(item)
-        if text:
-            lines.append(f"- {text}")
-    return lines
 
 
 def render_portfolio_suggestions_section(*, items: list[str]) -> dict[str, Any]:
@@ -246,13 +167,6 @@ def _load_advisor_prompts() -> dict[str, str]:
     return load_prompt_config(PROMPT_CONFIG_PATH, DEFAULT_ADVISOR_PROMPTS, section="advisor")
 
 
-def _normalize_skill(value: str) -> str:
-    cleaned = re.sub(r"\s+", " ", value or "").strip()
-    cleaned = re.sub(r"^[\-\*\d\.)\(\s]+", "", cleaned)
-    cleaned = cleaned.strip(" ,.;:")
-    return cleaned
-
-
 def _is_skill_candidate(value: str) -> bool:
     lowered = value.lower()
     if not lowered:
@@ -300,19 +214,6 @@ def _build_resume_corpus(resume_modules_dir: Path) -> str:
         if path.exists():
             chunks.append(path.read_text(encoding="utf-8"))
     return "\n".join(chunks)
-
-
-def _load_dotenv() -> None:
-    env_path = Path(__file__).resolve().parents[2] / ".env"
-    if not env_path.exists():
-        return
-
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
 def _strip_code_fences(text: str) -> str:
@@ -414,13 +315,18 @@ def _build_skill_rows_from_packets(packets: list[dict[str, Any]]) -> list[dict[s
     return skill_rows
 
 
+def _qualifying_skill_rows(skill_rows: list[dict[str, int]]) -> list[dict[str, int]]:
+    return [row for row in skill_rows if int(row["must_haves"]) >= 3][:20]
+
+
 def _skill_table_lines(skill_rows: list[dict[str, int]]) -> list[str]:
     lines = ["## Skills", "", "| Skill | Must Haves | Good To Haves | Total |", "| --- | ---: | ---: | ---: |"]
-    if not skill_rows:
+    filtered_rows = _qualifying_skill_rows(skill_rows)
+    if not filtered_rows:
         lines.append("| None identified | 0 | 0 | 0 |")
         return lines
 
-    for row in skill_rows:
+    for row in filtered_rows:
         lines.append(
             f"| {row['skill']} | {row['must_haves']} | {row['good_to_haves']} | {row['total']} |"
         )
@@ -472,46 +378,6 @@ def _bullet_lines(items: list[str], heading: str, placeholder: str, prefix: str 
     return lines
 
 
-def _general_advice_lines(summary: str, advice: list[str]) -> list[str]:
-    parts: list[str] = []
-    summary_text = _normalize_skill(summary) if summary else ""
-    if summary_text:
-        parts.append(f"Summary: {summary_text}")
-
-    advice_text = [_normalize_skill(item) for item in advice if _normalize_skill(item)]
-    if advice_text:
-        parts.append("Advice: " + " ".join(advice_text))
-
-    if not parts:
-        parts.append("Summary: Add job packets to generate a tailored summary and advice.")
-
-    return ["## General Advice and Summary", "", " ".join(parts)]
-
-
-def _recommended_job_titles_lines(rows: list[dict[str, Any]]) -> list[str]:
-    lines = ["## Recommended Job Titles", ""]
-    if not rows:
-        lines.append("- No job packets provided.")
-        return lines
-
-    for row in rows:
-        summary = f"{row['description']}. {row['rationale']}".strip()
-        lines.append(f"- {row['job_title']} (score {row['compatibility_score']}): {summary}")
-    return lines
-
-
-def _resume_recommendation_lines(rows: list[dict[str, Any]]) -> list[str]:
-    lines = ["## Resume Recommendation", ""]
-    if not rows:
-        lines.append("- No resume recommendations available.")
-        return lines
-
-    for row in rows:
-        summary = f"{row['recommendation']}. {row['reason']}".strip()
-        lines.append(f"- {row['area']}: {summary} (P{row['priority']})")
-    return lines
-
-
 def _post_openrouter_json(
     *,
     model: str,
@@ -520,7 +386,7 @@ def _post_openrouter_json(
     schema_name: str,
     schema: dict[str, Any],
 ) -> dict[str, Any]:
-    _load_dotenv()
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY is not configured")
@@ -562,7 +428,7 @@ def _generate_recommendation_sections(
                 ),
             ),
             render_most_compatible_jobs_section(rows=[]),
-            render_recommend_skills_section(skill_rows=[], skills=[]),
+            render_recommend_skills_section(skill_rows=[]),
             render_recommended_job_titles_section(rows=[]),
             render_resume_recommendation_section(rows=[]),
             render_interview_prep_section(items=[]),
@@ -696,7 +562,7 @@ def _generate_recommendation_sections(
     sections = [
         render_general_advice_section(summary=summary, general_advice=general_advice),
         render_most_compatible_jobs_section(rows=most_compatible_rows),
-        render_recommend_skills_section(skill_rows=skill_rows, skills=[row["skill"] for row in skill_rows]),
+        render_recommend_skills_section(skill_rows=skill_rows),
         render_recommended_job_titles_section(rows=job_title_rows),
         render_resume_recommendation_section(rows=resume_rows),
         render_interview_prep_section(items=[str(item) for item in payload.get("interview_prep", [])]),

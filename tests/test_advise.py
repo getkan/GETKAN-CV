@@ -209,10 +209,9 @@ class AdviseTests(unittest.TestCase):
             )
             skills = render_recommend_skills_section(
                 skill_rows=[
-                    {"skill": "Kubernetes", "must_haves": 1, "good_to_haves": 0, "total": 1},
-                    {"skill": "Python", "must_haves": 1, "good_to_haves": 0, "total": 1},
-                ],
-                skills=["Kubernetes", "Python"],
+                    {"skill": "Kubernetes", "must_haves": 3, "good_to_haves": 0, "total": 3},
+                    {"skill": "Python", "must_haves": 4, "good_to_haves": 0, "total": 4},
+                ]
             )
             resume_recs = render_resume_recommendation_section(
                 rows=[
@@ -230,7 +229,7 @@ class AdviseTests(unittest.TestCase):
             self.assertIn("## Recommended Job Titles", titles["lines"][0])
             self.assertIn("- Backend Engineer (score 5): Works on APIs. Matches API delivery", "\n".join(titles["lines"]))
             self.assertEqual(skills["skills"], ["Kubernetes", "Python"])
-            self.assertIn("| Python | 1 | 0 |", "\n".join(skills["lines"]))
+            self.assertIn("| Python | 4 | 0 |", "\n".join(skills["lines"]))
             self.assertIn("## Resume Recommendation", resume_recs["lines"][0])
             self.assertIn("- Summary: Lead with backend impact. Matches packet emphasis (P1)", "\n".join(resume_recs["lines"]))
             self.assertIn("## Interview Prep", interview_prep["lines"][0])
@@ -240,6 +239,21 @@ class AdviseTests(unittest.TestCase):
             self.assertIn("## Portfolio or Project Suggestions", portfolio["lines"][0])
             self.assertIn("deployment pipeline demo", "\n".join(portfolio["lines"]))
             self.assertIn("## General Advice and Summary", general["lines"][0])
+
+    def test_advisor_skills_only_renders_three_or_more_must_haves(self):
+        skills = render_recommend_skills_section(
+            skill_rows=[
+                {"skill": "Python", "must_haves": 3, "good_to_haves": 1, "total": 4},
+                {"skill": "Terraform", "must_haves": 2, "good_to_haves": 4, "total": 6},
+                {"skill": "GraphQL", "must_haves": 0, "good_to_haves": 3, "total": 3},
+            ]
+        )
+
+        rendered = "\n".join(skills["lines"])
+        self.assertEqual(skills["skills"], ["Python"])
+        self.assertIn("| Python | 3 | 1 | 4 |", rendered)
+        self.assertNotIn("Terraform", rendered)
+        self.assertNotIn("GraphQL", rendered)
 
     def test_advisor_combines_openrouter_calls_into_single_request(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -290,7 +304,7 @@ class AdviseTests(unittest.TestCase):
                 "Summary: Focus on backend engineering and platform delivery.",
                 "\n".join(lines),
             )
-            self.assertIn("| Python | 1 | 0 |", "\n".join(lines))
+            self.assertIn("| None identified | 0 | 0 | 0 |", "\n".join(lines))
 
     def test_run_job_hunt_advice_mode_skips_parsing_pipeline(self):
         with tempfile.TemporaryDirectory() as tmpdir:
