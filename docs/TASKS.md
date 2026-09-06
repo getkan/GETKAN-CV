@@ -29,7 +29,10 @@ No pending tasks. Add a task here when new work is scoped in
   - Added `.vscode/settings.json` for workspace-level XeLaTeX recipe override.
   - Added `resume/.latexmkrc` for command-line consistency.
   - Verified `xelatex` builds work from both editor and terminal.
-- [] Loading indicator for long-running operations (e.g., fetching job listings, compiling PDFs).
+- [x] One-line progress output for long-running CLI operations.
+  - Replaced animated spinner output with one stderr line per action so stdout remains clean JSON.
+- [x] Tailored CV letter output.
+  - Added `resume/cv.tex` tailoring and published `<job_name>-cv.pdf` outputs alongside resume PDFs.
 - [] More dynamic resume modules, allowing for easier addition and removal of sections without modifying core logic.
 - [] Extract skills from hardcoded lists into a configurable source (e.g., JSON or database).
 
@@ -39,6 +42,6 @@ No pending tasks. Add a task here when new work is scoped in
 
 ## Notes
 
-- PDF publication is validated by manual inspection; automated page-count assertions are in place for tailored output.
-- One-page layout fitting uses deterministic rules; no LLM is involved in the rewriting phase.
+- PDF publication is validated by manual inspection; automated page-count assertions are in place for tailored resume output.
+- One-page layout fitting uses progressive profile constraints while model-assisted tailoring remains constrained to existing resume facts.
 

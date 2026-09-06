@@ -34,11 +34,12 @@ A job listing from a URL or local file is parsed into a normalized, validated
 
 ### Outcome
 
-Tailored resume modules and a compiled PDF per job, with progressive one-page layout fitting.
+Tailored resume modules, a tailored CV letter, and compiled PDFs per job, with progressive one-page layout fitting for the resume.
 
 ### Included work
 
 - Module tailoring with deterministic rewriting in `src/application/deterministic_tailor.py`.
+- CV-letter tailoring from `resume/cv.tex` using the same LaTeX styling.
 - One-page fit profiles and progressive constraint application in `src/application/tailor_resume.py`.
 - `build`, `build-base`, and batch URL-list builds.
 - Artifact layout under `output/<job_name>/`.
@@ -51,11 +52,11 @@ Tailored resume modules and a compiled PDF per job, with progressive one-page la
 
 ### Exit criteria
 
-- Tailored `.tex` modules and a published PDF are produced for a build run.
+- Tailored `.tex` modules, tailored `cv.tex`, and published resume/CV PDFs are produced for a build run.
 
 ### Validation
 
-- Test suite plus manual review of the generated PDF.
+- Test suite plus manual review of the generated PDFs.
 
 
 ## Phase 3: Rebuild and advice workflows (completed)

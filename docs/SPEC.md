@@ -2,11 +2,11 @@
 
 ## Problem
 
-Manually rewriting a resume for every job listing is slow and error prone, and
-hand edits tend to drift away from the facts in the source resume. GETKAN-CV
-turns a job listing into a normalized job packet and produces a tailored,
-one-page LaTeX resume that only reuses facts already present in the base
-resume.
+Manually rewriting a resume and letter of introduction for every job listing is
+slow and error prone, and hand edits tend to drift away from the facts in the
+source resume. GETKAN-CV turns a job listing into a normalized job packet and
+produces a tailored, one-page LaTeX resume plus a short CV letter that only
+reuse facts already present in the base resume.
 
 ## Users
 
@@ -34,6 +34,8 @@ base resume in `resume/` and reviews generated output before sending it.
   code.
 - Every successful run appends an entry to `log/success_history.jsonl` and
   prints a JSON result summary on stdout.
+- Long-running CLI actions emit one plain progress line on stderr; stdout is
+  reserved for JSON result summaries.
 - A parse that produces `metadata.validation_errors` is a failure: no tailored
   output is created, the packet is written to
   `output/failed/<job_name>/job_packet.json`, the source is appended to
@@ -61,9 +63,10 @@ user-editable JSON files under `src/*/`.
   - Writes the normalized packet to `job_packet.json`.
 - **Tailoring phase** (`src/application/tailor_resume.py` + `src/application/deterministic_tailor.py`):
   - Loads the job packet and applies one-page layout profiles progressively.
-  - For each profile, `deterministic_tailor.py` rewrites `summary`, `experience`, `personalprojects`, and `aboutme` modules using deterministic rules (no LLM).
+  - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `cv.tex` letter using the configured OpenRouter tailoring prompt.
   - Writes tailored modules to `output/<job_name>/resume/modules/`.
-  - Compiles with `xelatex` to PDF.
+  - Writes the tailored CV letter to `output/<job_name>/resume/cv.tex`.
+  - Compiles the resume and CV letter with `xelatex` to PDFs.
   - If page count ≤ 1, selects that profile and stops; otherwise uses the least constrained profile.
 - **Advice phase** (`src/application/advise.py`):
   - Reads saved job packets and aggregates job hunt recommendations.
@@ -71,7 +74,7 @@ user-editable JSON files under `src/*/`.
 - **Supporting layers**:
   - `src/domain/` defines contracts: `job_packet.py` (job metadata), `resume_profile.py` (layout constraints).
   - `src/infrastructure/` provides adapters: `openrouter.py` (model API), `latex.py` (XeLaTeX integration), `artifacts.py` (I/O), `prompt_config.py` (prompt management).
-- **State management**: File-based; `output/<job_name>/job_packet.json`, `tailored_resume.json`, compiled PDF, failed packets under `output/failed/`, and logs in `log/success_history.jsonl` + `log/failed_history.jsonl`.
+- **State management**: File-based; `output/<job_name>/job_packet.json`, `tailored_resume.json`, tailored TeX files, compiled resume/CV PDFs, failed packets under `output/failed/`, and logs in `log/success_history.jsonl` + `log/failed_history.jsonl`.
 - **External services**: OpenRouter for LLM calls, HTTP fetch for listing URLs.
 
 
@@ -89,8 +92,9 @@ user-editable JSON files under `src/*/`.
 
 - Python 3.10+ on Linux, `xelatex` on `PATH`, optional `pdfinfo` for page
   counts.
-- Tailored output should fit one page; progressive compactness profiles are
-  applied until it does.
+- Tailored resume output should fit one page; progressive compactness profiles
+  are applied until it does. The CV letter should remain short and employer
+  facing.
 
 ## Non-goals
 
@@ -105,7 +109,8 @@ user-editable JSON files under `src/*/`.
 - Tailored modules contain only facts derivable from `resume/modules/*`.
 - `python -m unittest tests.test_parse_job tests.test_tailor_resume tests.test_advise tests.test_prompt_config`
   passes.
-- Manual check: generated PDF opens, is one page, and reads correctly.
+- Manual check: generated resume and CV PDFs open, the resume is one page, and
+  both documents read correctly.
 
 ## Unresolved questions
 

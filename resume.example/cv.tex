@@ -1,0 +1,61 @@
+%-------------------------------------------------------------------------------
+% CONFIGURATIONS
+%-------------------------------------------------------------------------------
+\documentclass[11pt, letterpaper]{../getkan-cv}
+
+\geometry{left=1.4cm, top=.8cm, right=1.4cm, bottom=1.8cm, footskip=.5cm}
+\fontdir[fonts/]
+\colorlet{awesome}{awesome-red}
+\setbool{acvSectionColorHighlight}{true}
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+
+
+%-------------------------------------------------------------------------------
+% PERSONAL INFORMATION
+%-------------------------------------------------------------------------------
+\name{Example}{Candidate}
+\position{Senior Software Engineer}
+\address{City, State}
+
+\mobile{(+1) 555-0100}
+\email{candidate@example.com}
+\github{example-candidate}
+
+\recipient{Example Company}{}
+\letterdate{\today}
+\lettertitle{}
+\letteropening{Dear Hiring Team,}
+\letterclosing{Sincerely,}
+
+
+%-------------------------------------------------------------------------------
+\begin{document}
+
+\makecvheader[C]
+
+\makecvfooter
+{\today}
+{Example Candidate~~~·~~~Curriculum Vitae}
+{\thepage}
+
+
+%-------------------------------------------------------------------------------
+% CV CONTENT
+%-------------------------------------------------------------------------------
+\makelettertitle
+
+\begin{cvletter}
+    My name is Example Candidate, and I am a senior software engineer based in City, State. I think of software as a craft, and I take pride in creating useful, easy-to-maintain systems that help people. My background began in frontend engineering with JavaScript, React, and Vue, then grew into backend and platform work with TypeScript, Node.js, Python, REST APIs, testing, observability, and microservice architecture.
+
+    In my current role, I have led redesign and upgrade projects, created component libraries, modernized legacy applications, improved testing practices, designed backend service patterns, and mentored other developers through practical engineering decisions. That work has included migrating older UI surfaces into modern single-page applications, designing API endpoints, encapsulating business logic in reusable services, optimizing database queries, and building reliable real-time workflows.
+
+    I stay curious about technology, especially developer tooling, automation, and AI-assisted development. Outside my professional work, I build projects that let me explore frontend tools, CSS, automation, and pragmatic engineering workflows. Those projects reflect how I like to work: carefully, experimentally, and with an eye toward tools that make teams more capable.
+
+    For a future employer, I bring steady technical judgment, ownership, and clear communication. I would be excited for the opportunity to discuss how my skills and experience align with your needs. Thank you for considering my application.
+\end{cvletter}
+
+\makeletterclosing
+
+
+%-------------------------------------------------------------------------------
+\end{document}

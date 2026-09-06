@@ -1,0 +1,57 @@
+{
+    "programming_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "Python",
+        "SQL",
+        "TypeScript"
+    ],
+    "application_frameworks": [
+        "React",
+        "Vue",
+        "Next.js",
+        "Svelte",
+        "Node.js",
+        "Fastify"
+    ],
+    "backend_and_data": [
+        "API Design",
+        "REST APIs",
+        "Microservices",
+        "SQL",
+        "Query Optimization",
+        "Caching",
+        "JWT"
+    ],
+    "devops_and_delivery": [
+        "CI/CD",
+        "Deployment",
+        "Git",
+        "Health Monitoring",
+        "Observability",
+        "OpenTelemetry",
+        "Production Reliability",
+        "Docker",
+        "GitHub Actions",
+        "k6"
+    ],
+    "testing_and_quality": [
+        "Automated Testing",
+        "Code Quality",
+        "Coverage",
+        "End-to-End Testing",
+        "Regression Prevention",
+        "Unit Testing",
+        "Integration Testing",
+        "Test Strategy"
+    ],
+    "frontend_and_product": [
+        "Accessibility",
+        "Component Libraries",
+        "Design Systems",
+        "Responsive UI",
+        "Tailwind CSS",
+        "UI Architecture"
+    ]
+}

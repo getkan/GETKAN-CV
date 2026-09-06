@@ -1,17 +1,19 @@
 # GETKAN-CV
 
-GETKAN-CV is a Python + LaTeX resume tailoring tool.
+GETKAN-CV is a Python + LaTeX resume and CV-letter tailoring tool.
 
-It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules with truth-preserving edits, and compiles PDF resume outputs using `xelatex`. For tailored builds, the tool applies progressive one-page layout profiles to fit content onto a single page when possible.
+It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules and a short employer-facing CV letter with truth-preserving edits, and compiles PDF outputs using `xelatex`. For tailored builds, the tool applies progressive one-page layout profiles to fit resume content onto a single page when possible.
 
 ## What This Project Does
 
 - Parses a job listing into a normalized job packet.
 - Tailors selected resume modules (`summary.tex`, `experience.tex`, `personalprojects.tex`, `aboutme.tex`).
+- Tailors `cv.tex` as a short letter of introduction for the target employer and role.
 - Uses OpenRouter to generate the tailored module content. `OPENROUTER_API_KEY` is required for tailoring; missing credentials, request failures, or invalid model output stop the run without generating a fallback resume.
 - Writes generated artifacts to a dedicated output folder.
-- Compiles a LaTeX PDF using `xelatex`.
+- Compiles LaTeX PDFs using `xelatex`.
 - Supports rebuilding tailored outputs directly from a manually edited `job_packet.json`, or forcing a fresh parse from the packet's source URL.
+- Emits one plain stderr progress line per long-running action while keeping stdout reserved for JSON results.
 
 ## Project Structure
 
@@ -74,12 +76,12 @@ getkan-cv.cls
 resume/
   fonts/
   resume.tex
+  cv.tex
   modules/
     summary.tex
     experience.tex
     personalprojects.tex
     aboutme.tex
-    education.tex
 ```
 
 ### Root and Class Files
@@ -90,6 +92,10 @@ resume/
   - Main resume entrypoint.
   - Sets page geometry, color theme, fonts, and header/footer identity fields.
   - Imports active content modules using `\input{modules/...}`.
+- `resume/cv.tex`
+  - Main CV-letter entrypoint.
+  - Uses the same class, font, header, footer, and cover-letter macros as the resume styling.
+  - Provides the base short letter that tailored runs customize for the target employer.
 - `resume/fonts/`
   - Local font files consumed by `\fontdir[fonts/]` in `resume/resume.tex`.
   - Provides Roboto variants and FontAwesome used by the custom class.
@@ -107,9 +113,6 @@ resume/
 - `resume/modules/aboutme.tex`
   - About Me section.
   - Mixes education anchor content plus personal interest/context bullets.
-- `resume/modules/education.tex`
-  - Standalone Education section content.
-  - Currently present as a source module but not imported by default in `resume/resume.tex`.
 
 ### Generated TeX (Per Tailoring Run)
 
@@ -117,10 +120,14 @@ For each tailored run, TeX files are copied/generated into:
 
 - `output/<job_name>/resume/resume.tex`
   - Compilable run-specific root file.
+- `output/<job_name>/resume/cv.tex`
+  - Compilable run-specific CV letter file.
 - `output/<job_name>/resume/modules/*.tex`
   - Tailored versions of section modules used for that job target.
 - `output/<job_name>/<job_name>.pdf`
-  - Published final PDF at the output root.
+  - Published final resume PDF at the output root.
+- `output/<job_name>/<job_name>-cv.pdf`
+  - Published final CV-letter PDF at the output root.
 
 ## Requirements
 
@@ -284,7 +291,7 @@ output/general
 
 ### 3) Rebuild from an existing job_packet.json
 
-Use this when you manually edit a `job_packet.json` and want regenerated tailored modules/PDF from that packet.
+Use this when you manually edit a `job_packet.json` and want regenerated tailored modules, CV letter, and PDFs from that packet.
 
 ```bash
 ./tailor-resume rebuild <path_to_job_packet_json>
@@ -324,8 +331,8 @@ Force a fresh parse from the packet's `metadata.source_url`:
 This mode:
 
 - Skips URL/file parsing.
-- Rebuilds tailored output from the supplied packet.
-- Writes/updates `job_packet.json`, `tailored_resume.json`, and compiled PDF output in the target folder.
+- Rebuilds tailored resume and CV-letter output from the supplied packet.
+- Writes/updates `job_packet.json`, `tailored_resume.json`, and compiled PDF outputs in the target folder.
 - `--all` scans the output tree for `job_packet.json` files and rebuilds each one.
 - `-f/--force` re-fetches and re-parses the listing from `metadata.source_url` and replaces the existing packet contents. It fails when the packet has no `metadata.source_url`.
 
@@ -418,8 +425,10 @@ For a run like `./tailor-resume build -u <job_url>`:
 - `output/github-careers/job_packet.json`: Parsed and normalized job data.
 - `output/github-careers/tailored_resume.json`: Tailoring payload + compile metadata.
 - `output/github-careers/resume/resume.tex`: Compilable resume root.
+- `output/github-careers/resume/cv.tex`: Compilable tailored CV letter.
 - `output/github-careers/resume/modules/*.tex`: Tailored module files.
-- `output/github-careers/github-careers.pdf`: Final PDF output.
+- `output/github-careers/github-careers.pdf`: Final resume PDF output.
+- `output/github-careers/github-careers-cv.pdf`: Final CV-letter PDF output.
 - `log/success_history.jsonl`: Append-only history of successful runs with timestamps.
 - `log/failed_history.jsonl`: Append-only history of failed parses with their validation errors.
 
@@ -446,8 +455,9 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 1. Run `build` from URL/file or URL-list.
 2. Inspect generated modules in `output/<job_name>/resume/modules`.
 3. Optionally edit `job_packet.json` or generated module files.
-4. Run `rebuild` with the packet path to regenerate outputs.
-5. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
+4. Optionally inspect or edit the generated CV letter at `output/<job_name>/resume/cv.tex`.
+5. Run `rebuild` with the packet path to regenerate outputs.
+6. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
 
 For a non-tailored base resume build, use `build-base`.
 
@@ -470,16 +480,16 @@ For a non-tailored base resume build, use `build-base`.
    - Profile 2: moderate constraints (summary_sentences=2, cvsubitems_limit=3, word_limit=24)
    - Profile 3: maximum constraints (summary_sentences=1, cvsubitems_limit=2, word_limit=18)
 3. For each profile:
-   - `src/application/deterministic_tailor.py` rewrites each module deterministically (no model calls).
-   - Modules are written to `output/<job_name>/resume/modules/`.
-   - XeLaTeX compiles the resume to PDF.
+  - `src/application/tailor_resume.py` requests tailored resume modules and a tailored `cv.tex` from OpenRouter using JSON schema output.
+  - Modules are written to `output/<job_name>/resume/modules/` and the CV letter is written to `output/<job_name>/resume/cv.tex`.
+  - XeLaTeX compiles the resume and CV letter to PDFs.
    - Page count is checked; if ≤ 1 page, the profile is selected and tailoring stops.
 4. If no profile fits to one page, the least constrained profile is used.
-5. Artifacts are written to `output/<job_name>/`; the PDF is published at `output/<job_name>/<job_name>.pdf`.
+5. Artifacts are written to `output/<job_name>/`; PDFs are published at `output/<job_name>/<job_name>.pdf` and `output/<job_name>/<job_name>-cv.pdf`.
 
 ### Notes
 
 - Tailoring is constrained to use existing resume facts only; no new achievements are invented.
-- Module rewriting is deterministic (no LLM involved in the rewrite phase).
+- Model-assisted tailoring is constrained by prompts and schema output to reuse existing resume facts only.
 - Project selection/prioritization logic for `personalprojects.tex` is independent of job description and governed by a fixed priority list.
 - One-page fitting uses progressive compactness profiles to maximize content density while maintaining readability.

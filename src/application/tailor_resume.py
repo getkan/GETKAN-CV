@@ -15,6 +15,7 @@ from src.infrastructure.prompt_config import load_prompt_config
 class ResumeTailorState(TypedDict, total=False):
     job_packet: dict[str, Any]
     source_modules: dict[str, Any]
+    source_cv_tex: str
     prompts: dict[str, str]
     model_output: dict[str, Any]
     violations: list[str]
@@ -47,6 +48,12 @@ DEFAULT_PROMPTS: dict[str, str] = {
         "Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus"
     ),
     "aboutme_section_prompt": "Always include required education facts in About Me.",
+    "cv_letter_prompt": (
+        "Customize the supplied cv.tex as a short employer-facing letter of introduction for the target role. "
+        "Keep the existing LaTeX styling, header, footer, letter metadata commands, cvletter environment, and closing structure. "
+        "Tailor the paragraphs toward the company, role, domain, and strongest relevant evidence from the resume modules. "
+        "Do not invent facts, metrics, dates, technologies, credentials, or personal details. Return a complete compilable cv.tex document."
+    ),
 }
 
 def render_env_placeholders(text: str) -> str:
@@ -66,6 +73,7 @@ def load_context(state: ResumeTailorState) -> ResumeTailorState:
         "personalprojects.tex": (modules_root / "personalprojects.tex").read_text(encoding="utf-8"),
         "aboutme.tex": (modules_root / "aboutme.tex").read_text(encoding="utf-8"),
     }
+    state["source_cv_tex"] = (repo_root / "resume" / "cv.tex").read_text(encoding="utf-8")
     state["prompts"] = _load_prompt_config()
     return state
 
@@ -103,11 +111,13 @@ def _tailor_modules_with_openrouter(state: ResumeTailorState) -> ResumeTailorSta
     user_prompt += "\n\nSection instructions:\n" + "\n".join(
         f"{name}: {instruction}" for name, instruction in section_prompts.items()
     )
+    user_prompt += "\ncv.tex: " + prompts.get("cv_letter_prompt", "")
     user_prompt += "\n\nOne-page layout profile:\n" + json.dumps(profile)
     user_prompt += "\n\nSource TeX modules:\n" + json.dumps(
         {name: source_modules.get(name, "") for name in module_names},
         indent=2,
     )
+    user_prompt += "\n\nSource cv.tex:\n" + state.get("source_cv_tex", "")
     schema = {
         "type": "object",
         "properties": {
@@ -116,9 +126,10 @@ def _tailor_modules_with_openrouter(state: ResumeTailorState) -> ResumeTailorSta
                 "properties": {name: {"type": "string"} for name in module_names},
                 "required": list(module_names),
                 "additionalProperties": False,
-            }
+            },
+            "tailored_cv_tex": {"type": "string"},
         },
-        "required": ["tailored_modules"],
+        "required": ["tailored_modules", "tailored_cv_tex"],
         "additionalProperties": False,
     }
     response = post_json_schema(
@@ -133,10 +144,17 @@ def _tailor_modules_with_openrouter(state: ResumeTailorState) -> ResumeTailorSta
         strict=True,
     )
 
-    modules = _extract_json_payload(response).get("tailored_modules")
+    response_payload = _extract_json_payload(response)
+    modules = response_payload.get("tailored_modules")
     if not isinstance(modules, dict) or any(not isinstance(modules.get(name), str) for name in module_names):
         raise RuntimeError("OpenRouter returned an invalid tailored resume module payload")
-    state["model_output"] = {"tailored_modules": {name: modules[name] for name in module_names}}
+    tailored_cv_tex = response_payload.get("tailored_cv_tex")
+    if not isinstance(tailored_cv_tex, str) or not tailored_cv_tex.strip():
+        raise RuntimeError("OpenRouter returned an invalid tailored CV payload")
+    state["model_output"] = {
+        "tailored_modules": {name: modules[name] for name in module_names},
+        "tailored_cv_tex": tailored_cv_tex,
+    }
     return state
 
 
@@ -170,6 +188,7 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
     repo_root = Path(__file__).resolve().parents[2]
     source_modules = repo_root / "resume" / "modules"
     source_resume = repo_root / "resume" / "resume.tex"
+    source_cv = repo_root / "resume" / "cv.tex"
     source_fonts = repo_root / "resume" / "fonts"
     class_file = repo_root / "getkan-cv.cls"
 
@@ -184,6 +203,8 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
 
     resume_target = resume_root / "resume.tex"
     resume_target.write_text(source_resume.read_text(encoding="utf-8"), encoding="utf-8")
+    cv_target = resume_root / "cv.tex"
+    cv_target.write_text(state["model_output"].get("tailored_cv_tex") or source_cv.read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copy2(class_file, resume_root / class_file.name)
     if source_fonts.exists():
         shutil.copytree(source_fonts, resume_root / "fonts", dirs_exist_ok=True)
@@ -195,56 +216,90 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
     resume_text = render_env_placeholders(resume_text)
     resume_target.write_text(resume_text, encoding="utf-8")
 
+    cv_text = cv_target.read_text(encoding="utf-8")
+    cv_text = cv_text.replace("\\documentclass[11pt, letterpaper]{../getkan-cv}", "\\documentclass[11pt, letterpaper]{getkan-cv}")
+    cv_text = cv_text.replace("\\fontdir[../fonts/]", "\\fontdir[fonts/]")
+    cv_text = render_env_placeholders(cv_text)
+    cv_target.write_text(cv_text, encoding="utf-8")
+
     output_path = destination / "tailored_resume.json"
     output_path.write_text(json.dumps(state["model_output"], indent=2), encoding="utf-8")
     return {
         "output_path": str(output_path),
         "resume_root": str(resume_root),
         "resume_tex": str(resume_target),
+        "cv_tex": str(cv_target),
         "output_dir": str(destination),
         "job_name": job_name,
     }
 
 
-def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -> dict[str, Any]:
-    xelatex = shutil.which("xelatex")
-    if not xelatex:
-        return {"compile_log": "xelatex not available on PATH", "summary": "Tailoring completed, PDF compile skipped", "pdf_path": ""}
-
-    resume_tex = Path(artifacts["resume_tex"])
-    source_root = Path(artifacts.get("resume_root") or artifacts.get("tex_root") or resume_tex.parent)
-    output_dir = Path(artifacts.get("output_dir") or source_root.parent)
-    job_name = str(artifacts.get("job_name") or output_dir.name)
-    safe_job_name = re.sub(r"[^A-Za-z0-9._-]", "-", job_name).strip("-") or "resume"
-    output_pdf = source_root / "resume.pdf"
-    published_pdf = output_dir / f"{safe_job_name}.pdf"
+def _compile_tex_to_pdf(xelatex: str, source_root: Path, tex_filename: str, output_pdf: Path) -> tuple[bool, list[str]]:
     logs: list[str] = []
-
-    if resume_tex.exists():
-        resume_tex.write_text(render_env_placeholders(resume_tex.read_text(encoding="utf-8")), encoding="utf-8")
-
     for pass_index in range(2):
         result = subprocess.run(
-            [xelatex, "-interaction=nonstopmode", "-halt-on-error", "resume.tex"],
+            [xelatex, "-interaction=nonstopmode", "-halt-on-error", tex_filename],
             cwd=source_root,
             capture_output=True,
             text=True,
         )
-        logs.append(f"pass {pass_index + 1} exit={result.returncode}")
+        logs.append(f"{tex_filename} pass {pass_index + 1} exit={result.returncode}")
         if result.stdout:
             logs.append(result.stdout[-1200:])
         if result.stderr:
             logs.append(result.stderr[-1200:])
         if result.returncode != 0:
-            return {"compile_log": "\n".join(logs), "summary": "Tailoring completed, PDF compile failed", "pdf_path": ""}
+            return False, logs
 
-    if output_pdf.exists():
-        shutil.copy2(output_pdf, published_pdf)
+    compiled_pdf = source_root / f"{Path(tex_filename).stem}.pdf"
+    if compiled_pdf.exists():
+        shutil.copy2(compiled_pdf, output_pdf)
+    return True, logs
+
+
+def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -> dict[str, Any]:
+    xelatex = shutil.which("xelatex")
+    if not xelatex:
+        return {"compile_log": "xelatex not available on PATH", "summary": "Tailoring completed, PDF compile skipped", "pdf_path": "", "cv_pdf_path": ""}
+
+    resume_tex = Path(artifacts["resume_tex"])
+    cv_tex = Path(artifacts.get("cv_tex") or resume_tex.with_name("cv.tex"))
+    source_root = Path(artifacts.get("resume_root") or artifacts.get("tex_root") or resume_tex.parent)
+    output_dir = Path(artifacts.get("output_dir") or source_root.parent)
+    job_name = str(artifacts.get("job_name") or output_dir.name)
+    safe_job_name = re.sub(r"[^A-Za-z0-9._-]", "-", job_name).strip("-") or "resume"
+    published_pdf = output_dir / f"{safe_job_name}.pdf"
+    published_cv_pdf = output_dir / f"{safe_job_name}-cv.pdf"
+    logs: list[str] = []
+
+    if resume_tex.exists():
+        resume_tex.write_text(render_env_placeholders(resume_tex.read_text(encoding="utf-8")), encoding="utf-8")
+    if cv_tex.exists():
+        cv_tex.write_text(render_env_placeholders(cv_tex.read_text(encoding="utf-8")), encoding="utf-8")
+
+    resume_ok, resume_logs = _compile_tex_to_pdf(xelatex, source_root, "resume.tex", published_pdf)
+    logs.extend(resume_logs)
+    if not resume_ok:
+        return {"compile_log": "\n".join(logs), "summary": "Tailoring completed, resume PDF compile failed", "pdf_path": "", "cv_pdf_path": ""}
+
+    cv_pdf_path = ""
+    if cv_tex.exists():
+        cv_ok, cv_logs = _compile_tex_to_pdf(xelatex, source_root, "cv.tex", published_cv_pdf)
+        logs.extend(cv_logs)
+        if not cv_ok:
+            return {
+                "compile_log": "\n".join(logs),
+                "summary": "Tailoring completed, CV PDF compile failed",
+                "pdf_path": str(published_pdf if published_pdf.exists() else ""),
+                "cv_pdf_path": "",
+            }
+        cv_pdf_path = str(published_cv_pdf if published_cv_pdf.exists() else "")
 
     return {
         "compile_log": "\n".join(logs),
-        "summary": "Tailoring completed and PDF compiled",
+        "summary": "Tailoring completed and PDFs compiled",
         "pdf_path": str(published_pdf if published_pdf.exists() else ""),
+        "cv_pdf_path": cv_pdf_path,
     }
 
 
@@ -285,6 +340,7 @@ def recompile_existing_output(output_dir: str | Path) -> dict[str, Any]:
         "output_path": str(destination / "tailored_resume.json"),
         "resume_root": str(source_root),
         "resume_tex": str(resume_tex),
+        "cv_tex": str(source_root / "cv.tex"),
         "output_dir": str(destination),
         "job_name": destination.name,
     }

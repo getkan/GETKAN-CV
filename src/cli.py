@@ -4,12 +4,9 @@ import json
 import os
 import re
 import argparse
-import itertools
 import shutil
 import subprocess
 import sys
-import threading
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -24,39 +21,20 @@ from src.infrastructure.environment import load_dotenv
 
 
 class StatusSpinner:
-    """Terminal progress indicator writing to stderr to keep stdout clean for JSON output."""
+    """Single-line terminal progress indicator that keeps stdout clean for JSON output."""
 
     def __init__(self, message: str) -> None:
         self.message = message
-        self._running = False
-        self._thread: Optional[threading.Thread] = None
         self._is_tty = sys.stderr.isatty()
 
     def start(self) -> None:
         if not self._is_tty:
             return
-        self._running = True
-        self._thread = threading.Thread(target=self._spin, daemon=True)
-        self._thread.start()
-
-    def _spin(self) -> None:
-        chars = itertools.cycle(["-", "\\", "|", "/"])
-        while self._running:
-            char = next(chars)
-            sys.stderr.write(f"\r{char} {self.message}...")
-            sys.stderr.flush()
-            time.sleep(0.1)
+        sys.stderr.write(f"{self.message}...\n")
+        sys.stderr.flush()
 
     def stop(self, final_msg: str = "") -> None:
-        if self._running:
-            self._running = False
-            if self._thread:
-                self._thread.join()
-        if self._is_tty:
-            sys.stderr.write("\r\033[K")
-            if final_msg:
-                sys.stderr.write(f"[✓] {final_msg}\n")
-            sys.stderr.flush()
+        return None
 
     def __enter__(self) -> StatusSpinner:
         self.start()
@@ -176,6 +154,11 @@ def _record_failed_packet(
 ) -> dict[str, Any]:
     errors = _validation_errors(job_packet)
     failed_root = output_base / "failed"
+    failed_root.mkdir(parents=True, exist_ok=True)
+    failed_packet_root = failed_root / job_name
+    failed_packet_root.mkdir(parents=True, exist_ok=True)
+    failed_packet_path = failed_packet_root / "job_packet.json"
+    failed_packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
 
     source = job_url or (str(Path(file_path).resolve()) if file_path else "")
     failed_list_path = failed_root / "failed.txt"
@@ -191,6 +174,7 @@ def _record_failed_packet(
         "mode": "failed",
         "job_name": job_name,
         "url": job_url or "",
+        "job_packet": str(failed_packet_path),
         "failed_list": str(failed_list_path),
         "validation_errors": errors,
         "failed_log": failed_log_path,
@@ -300,6 +284,7 @@ def _run_single_tailor(
         "job_packet": str(packet_path),
         "summary": str(summary_path),
         "pdf": payload.get("compile", {}).get("pdf_path", ""),
+        "cv_pdf": payload.get("compile", {}).get("cv_pdf_path", ""),
         "compatibility_score": compatibility_score,
         "success_log": success_log_path,
     }
@@ -455,6 +440,7 @@ def rebuild_from_job_packet(
         "job_packet": str(output_packet_path),
         "summary": str(summary_path),
         "pdf": payload.get("compile", {}).get("pdf_path", ""),
+        "cv_pdf": payload.get("compile", {}).get("cv_pdf_path", ""),
         "compatibility_score": compatibility_score,
         "success_log": success_log_path,
         "model_name": resolved_tailor_model or "",
@@ -585,6 +571,7 @@ def run(
                         "job_packet": str(packet_path),
                         "summary": str(summary_path),
                         "pdf": payload.get("compile", {}).get("pdf_path", ""),
+                        "cv_pdf": payload.get("compile", {}).get("cv_pdf_path", ""),
                         "compatibility_score": compatibility_score,
                         "success_log": success_log_path,
                     }
@@ -620,6 +607,7 @@ def run(
                     "output_dir": str(output_root),
                     "summary": recompile_result.get("summary", ""),
                     "pdf": compile_payload.get("pdf_path", ""),
+                    "cv_pdf": compile_payload.get("cv_pdf_path", ""),
                     "page_count": compile_payload.get("page_count"),
                     "mode": "recompile",
                 },

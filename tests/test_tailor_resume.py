@@ -22,6 +22,31 @@ from src.application.tailor_resume import build_tailored_payload, tailor_modules
 from src.cli import clean_workspace_artifacts, rebuild_all_job_packets, rebuild_from_job_packet, run
 
 
+TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
+\geometry{left=1.4cm, top=.8cm, right=1.4cm, bottom=1.8cm, footskip=.5cm}
+\fontdir[fonts/]
+\colorlet{awesome}{awesome-red}
+\setbool{acvSectionColorHighlight}{true}
+\name{Nicholas}{Getka}
+\position{Senior Software Engineer}
+\email{nicholas.getka@gmail.com}
+\recipient{GitHub}{Hiring Team}
+\letterdate{\today}
+\lettertitle{Curriculum Vitae}
+\letteropening{Dear Hiring Team,}
+\letterclosing{Sincerely,}
+\begin{document}
+\makecvheader[C]
+\makecvfooter{\today}{Nicholas Getka~~~·~~~Letter of Introduction}{\thepage}
+\makelettertitle
+\begin{cvletter}
+I am excited about this Senior Engineer role because it connects with my full-stack engineering experience.
+\end{cvletter}
+\makeletterclosing
+\end{document}
+"""
+
+
 class TailorResumeTests(unittest.TestCase):
     def test_tailor_modules_propagates_openrouter_errors(self):
         state = {
@@ -59,10 +84,12 @@ class TailorResumeTests(unittest.TestCase):
             "prompts": {
                 "resume_customizer_system_prompt": "System prompt",
                 "resume_customizer_user_prompt_template": "Job: {job_packet}",
+                "cv_letter_prompt": "Tailor the CV letter",
             },
             "layout_profile": {},
+            "source_cv_tex": "Source CV",
         }
-        response = json.dumps({"tailored_modules": {name: f"AI {name}" for name in module_names}})
+        response = json.dumps({"tailored_modules": {name: f"AI {name}" for name in module_names}, "tailored_cv_tex": TAILORED_CV_TEX})
 
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch(
             "src.application.tailor_resume.post_json_schema",
@@ -71,7 +98,9 @@ class TailorResumeTests(unittest.TestCase):
             tailor_modules(state)
 
         openrouter_mock.assert_called_once()
+        self.assertIn("Tailor the CV letter", openrouter_mock.call_args.kwargs["user_prompt"])
         self.assertEqual(state["model_output"]["tailored_modules"]["summary.tex"], "AI summary.tex")
+        self.assertEqual(state["model_output"]["tailored_cv_tex"], TAILORED_CV_TEX)
 
     def test_category_boosts_raise_testing_bullet_score(self):
         item = "Established testing framework with Jest and Vue Test Utils for unit and integration test coverage"
@@ -111,7 +140,8 @@ class TailorResumeTests(unittest.TestCase):
                         "experience.tex": "\\cvsection{Experience}",
                         "personalprojects.tex": "\\cvsection{Personal Projects}",
                         "aboutme.tex": "Bachelor of Arts in Computer Science\nBachelor of Arts in Economics",
-                    }
+                    },
+                    "tailored_cv_tex": TAILORED_CV_TEX,
                 }
             )
             with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch(
@@ -146,14 +176,19 @@ class TailorResumeTests(unittest.TestCase):
             self.assertIn("aboutme.tex", payload["model_output"]["tailored_modules"])
             self.assertIn("Bachelor of Arts in Computer Science", payload["model_output"]["tailored_modules"]["aboutme.tex"])
             self.assertIn("Bachelor of Arts in Economics", payload["model_output"]["tailored_modules"]["aboutme.tex"])
+            self.assertIn("Senior Engineer role", payload["model_output"]["tailored_cv_tex"])
             self.assertTrue(Path(tmpdir, "resume", "modules", "summary.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "experience.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "personalprojects.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "aboutme.tex").exists())
+            self.assertTrue(Path(tmpdir, "resume", "cv.tex").exists())
+            self.assertIn("Senior Engineer role", Path(tmpdir, "resume", "cv.tex").read_text(encoding="utf-8"))
             if shutil.which("xelatex"):
                 self.assertTrue(Path(tmpdir, "demo-job.pdf").exists())
+                self.assertTrue(Path(tmpdir, "demo-job-cv.pdf").exists())
             else:
                 self.assertEqual(payload["compile"]["pdf_path"], "")
+                self.assertEqual(payload["compile"]["cv_pdf_path"], "")
             self.assertTrue(Path(tmpdir, "tailored_resume.json").exists())
 
     def test_run_uses_current_working_directory_for_default_output(self):

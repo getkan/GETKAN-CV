@@ -1,11 +1,15 @@
 ### TeX ###
 ## Core latex/pdflatex auxiliary files:
 *.aux
+*.fdb_latexmk
+*.xdv
 *.lof
 *.log
 *.lot
 *.fls
 *.out
+*.pdf
+*.synctex.gz
 *.toc
 
 ## Intermediate documents:
@@ -24,11 +28,7 @@
 .env
 
 ## Resume folder content
-resume/*
-!resume/.gitkeep
-!resume/.latexmkrc
-!resume/fonts/
-!resume/fonts/**
+resume/
 
 ## Output folder
 output/
@@ -36,11 +36,11 @@ output/
 
 ## IDE & Environment
 .vscode/*
-!.vscode/settings.json
 .github/
 
 ## Logs & Temporary files
 log/
+logs/
 tmp/
 
 ## Python

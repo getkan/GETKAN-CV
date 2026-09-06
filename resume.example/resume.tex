@@ -1,0 +1,47 @@
+%-------------------------------------------------------------------------------
+% CONFIGURATIONS
+%-------------------------------------------------------------------------------
+\documentclass[11pt, letterpaper]{../getkan-cv}
+
+\geometry{left=1.4cm, top=.8cm, right=1.4cm, bottom=1.8cm, footskip=.5cm}
+\fontdir[fonts/]
+\colorlet{awesome}{awesome-red}
+\setbool{acvSectionColorHighlight}{true}
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+
+
+%-------------------------------------------------------------------------------
+% PERSONAL INFORMATION
+%-------------------------------------------------------------------------------
+\name{Example}{Candidate}
+\position{Senior Software Engineer}
+\address{City, State}
+
+\mobile{(+1) 555-0100}
+\email{candidate@example.com}
+\github{example-candidate}
+\linkedin{example-candidate}
+
+
+%-------------------------------------------------------------------------------
+\begin{document}
+
+\makecvheader[C]
+
+\makecvfooter
+{\today}
+{Example Candidate~~~·~~~Résumé}
+{\thepage}
+
+
+%-------------------------------------------------------------------------------
+% CV/RESUME CONTENT
+%-------------------------------------------------------------------------------
+\input{modules/summary.tex}
+\input{modules/experience.tex}
+\input{modules/personalprojects.tex}
+\input{modules/aboutme.tex}
+
+
+%-------------------------------------------------------------------------------
+\end{document}
