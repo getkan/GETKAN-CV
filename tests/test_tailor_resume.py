@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 from src.application.deterministic_tailor import _score_item, build_allowlist
 from src.application.tailor_resume import build_tailored_payload, tailor_modules
-from src.cli import clean_workspace_artifacts, rebuild_all_job_packets, rebuild_from_job_packet, run
+from src.cli import clean_workspace_artifacts, load_listing_from_file, rebuild_all_job_packets, rebuild_from_job_packet, run
 
 
 TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
@@ -432,6 +432,11 @@ class TailorResumeTests(unittest.TestCase):
             self.assertTrue(log_dir.exists())
             self.assertEqual(list(output_dir.iterdir()), [])
             self.assertEqual(list(log_dir.iterdir()), [])
+
+    def test_load_listing_from_file_rejects_directories(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaisesRegex(ValueError, "not a file"):
+                load_listing_from_file(tmpdir)
 
 
 if __name__ == "__main__":

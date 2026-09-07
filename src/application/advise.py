@@ -534,10 +534,18 @@ def _generate_recommendation_sections(
     for index, item in enumerate(payload.get("recommended_job_titles", [])[:5]):
         if not isinstance(item, dict):
             continue
-        source = scored_packets[index] if index < len(scored_packets) else {}
+        job_title_text = _normalize_skill(str(item.get("job_title") or ""))
+        source = next(
+            (
+                packet
+                for packet in scored_packets
+                if job_title_text and job_title_text.lower() == str(packet.get("title") or "").strip().lower()
+            ),
+            {},
+        )
         job_title_rows.append(
             {
-                "job_title": _normalize_skill(str(item.get("job_title") or "")),
+                "job_title": job_title_text,
                 "description": _normalize_skill(str(item.get("description") or "")),
                 "rationale": _normalize_skill(str(item.get("rationale") or "")),
                 "compatibility_score": int(source.get("compatibility_score") or 0),

@@ -67,6 +67,12 @@ def _load_prompt_config() -> dict[str, str]:
 def load_context(state: ResumeTailorState) -> ResumeTailorState:
     repo_root = Path(__file__).resolve().parents[2]
     modules_root = repo_root / "resume" / "modules"
+    missing = [name for name in ("summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex") if not (modules_root / name).exists()]
+    if missing or not (repo_root / "resume" / "letter.tex").exists():
+        raise FileNotFoundError(
+            f"Base resume source is incomplete under {repo_root / 'resume'}. "
+            "Copy resume.example/ to resume/ and fill in your details before tailoring."
+        )
     state["source_modules"] = {
         "summary.tex": (modules_root / "summary.tex").read_text(encoding="utf-8"),
         "experience.tex": (modules_root / "experience.tex").read_text(encoding="utf-8"),

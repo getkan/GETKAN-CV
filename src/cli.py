@@ -78,6 +78,24 @@ ROLE_DEFAULT_MODELS: dict[str, str] = {
     "ADVISOR": "openai/gpt-4.1-mini",
 }
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_RESUME_DIR = REPO_ROOT / "resume"
+
+
+def _require_resume_source(modules_only: bool = False) -> Path:
+    modules_dir = REPO_RESUME_DIR / "modules"
+    if not (REPO_RESUME_DIR / "resume.tex").exists() or not modules_dir.is_dir():
+        raise FileNotFoundError(
+            f"Base resume source not found at {REPO_RESUME_DIR}. "
+            "Copy resume.example/ to resume/ and fill in your details before building."
+        )
+    if not modules_only and not (REPO_RESUME_DIR / "letter.tex").exists():
+        raise FileNotFoundError(
+            f"Base letter source not found at {REPO_RESUME_DIR / 'letter.tex'}. "
+            "Copy resume.example/ to resume/ and fill in your details before building."
+        )
+    return REPO_RESUME_DIR
+
 
 def load_listing_from_file(file_path: Optional[str]) -> str:
     if not file_path:
@@ -85,6 +103,8 @@ def load_listing_from_file(file_path: Optional[str]) -> str:
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Input file not found: {file_path}")
+    if not path.is_file():
+        raise ValueError(f"Input path is not a file: {file_path}")
     return path.read_text(encoding="utf-8")
 
 
@@ -107,7 +127,7 @@ def _resolve_model_for_role(role: str, cli_override: Optional[str]) -> Optional[
     if cli_override:
         return cli_override
 
-    load_dotenv(Path.cwd() / ".env")
+    load_dotenv(REPO_ROOT / ".env")
     role_key = f"OPENROUTER_MODEL_{role.upper()}"
     return os.getenv(role_key) or os.getenv("OPENROUTER_MODEL") or ROLE_DEFAULT_MODELS.get(role.upper())
 
@@ -264,6 +284,7 @@ def _run_single_tailor(
 
     output_root = Path(output_dir) if output_dir else (output_base / job_name)
     output_root.mkdir(parents=True, exist_ok=True)
+    _require_resume_source()
 
     compatibility_score = job_packet.get("compatibility_score", 0)
     success_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
@@ -292,8 +313,8 @@ def _run_single_tailor(
 
 def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
     with StatusSpinner("Building base resume and compiling PDF"):
-        repo_root = Path(__file__).resolve().parent.parent
-        resume_dir = repo_root / "resume"
+        repo_root = REPO_ROOT
+        resume_dir = _require_resume_source()
         destination = Path(output_dir) if output_dir else Path.cwd() / "output" / "general"
         destination.mkdir(parents=True, exist_ok=True)
         resume_output_root = destination / "resume"
@@ -382,6 +403,9 @@ def rebuild_from_job_packet(
     inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
     effective_name = _slugify(inferred_name)
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / effective_name)
+
+    if not _validation_errors(packet_payload):
+        _require_resume_source()
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
     resolved_parser_model = _resolve_model_for_role("PARSER", model_name)
@@ -550,6 +574,8 @@ def run(
                         )
                     )
                     continue
+
+                _require_resume_source()
 
                 output_root = output_base / auto_name
                 output_root.mkdir(parents=True, exist_ok=True)
