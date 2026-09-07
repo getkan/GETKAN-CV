@@ -829,13 +829,12 @@ def _clean_list(items: list[str] | None) -> list[str]:
 
 # Compatibility Scoring Helpers
 def _resume_summary() -> str:
-    repo_root = Path(__file__).resolve().parents[2]
-    if not (repo_root / "resume" / "modules").is_dir():
+    modules_dir = repo_root / "resume" / "modules"
+    if not modules_dir.is_dir() or any(not (modules_dir / name).is_file() for name in RESUME_MODULE_NAMES):
         raise FileNotFoundError(
-            f"Base resume modules not found at {repo_root / 'resume' / 'modules'}. "
+            f"Base resume modules not found at {modules_dir}. "
             "Copy resume.example/ to resume/ and fill in your details before scoring."
         )
-    modules_dir = repo_root / "resume" / "modules"
     parts: list[str] = []
     for name in RESUME_MODULE_NAMES:
         path = modules_dir / name
