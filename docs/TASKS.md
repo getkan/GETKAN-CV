@@ -32,7 +32,7 @@ No pending tasks. Add a task here when new work is scoped in
 - [x] One-line progress output for long-running CLI operations.
   - Replaced animated spinner output with one stderr line per action so stdout remains clean JSON.
 - [x] Tailored CV letter output.
-  - Added `resume/cv.tex` tailoring and published `<job_name>-cv.pdf` outputs alongside resume PDFs.
+  - Added `resume/letter.tex` tailoring and published `<job_name>-cv.pdf` outputs alongside resume PDFs.
 - [] More dynamic resume modules, allowing for easier addition and removal of sections without modifying core logic.
 - [] Extract skills from hardcoded lists into a configurable source (e.g., JSON or database).
 

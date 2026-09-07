@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 from src.application.deterministic_tailor import _score_item, build_allowlist
 from src.application.tailor_resume import build_tailored_payload, tailor_modules
-from src.cli import clean_workspace_artifacts, rebuild_all_job_packets, rebuild_from_job_packet, run
+from src.cli import clean_workspace_artifacts, load_listing_from_file, rebuild_all_job_packets, rebuild_from_job_packet, run
 
 
 TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
@@ -84,12 +84,12 @@ class TailorResumeTests(unittest.TestCase):
             "prompts": {
                 "resume_customizer_system_prompt": "System prompt",
                 "resume_customizer_user_prompt_template": "Job: {job_packet}",
-                "cv_letter_prompt": "Tailor the CV letter",
+                "letter_prompt": "Tailor the CV letter",
             },
             "layout_profile": {},
-            "source_cv_tex": "Source CV",
+            "source_letter_tex": "Source letter",
         }
-        response = json.dumps({"tailored_modules": {name: f"AI {name}" for name in module_names}, "tailored_cv_tex": TAILORED_CV_TEX})
+        response = json.dumps({"tailored_modules": {name: f"AI {name}" for name in module_names}, "tailored_letter_tex": TAILORED_CV_TEX})
 
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch(
             "src.application.tailor_resume.post_json_schema",
@@ -100,7 +100,7 @@ class TailorResumeTests(unittest.TestCase):
         openrouter_mock.assert_called_once()
         self.assertIn("Tailor the CV letter", openrouter_mock.call_args.kwargs["user_prompt"])
         self.assertEqual(state["model_output"]["tailored_modules"]["summary.tex"], "AI summary.tex")
-        self.assertEqual(state["model_output"]["tailored_cv_tex"], TAILORED_CV_TEX)
+        self.assertEqual(state["model_output"]["tailored_letter_tex"], TAILORED_CV_TEX)
 
     def test_category_boosts_raise_testing_bullet_score(self):
         item = "Established testing framework with Jest and Vue Test Utils for unit and integration test coverage"
@@ -141,7 +141,7 @@ class TailorResumeTests(unittest.TestCase):
                         "personalprojects.tex": "\\cvsection{Personal Projects}",
                         "aboutme.tex": "Bachelor of Arts in Computer Science\nBachelor of Arts in Economics",
                     },
-                    "tailored_cv_tex": TAILORED_CV_TEX,
+                    "tailored_letter_tex": TAILORED_CV_TEX,
                 }
             )
             with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch(
@@ -176,13 +176,13 @@ class TailorResumeTests(unittest.TestCase):
             self.assertIn("aboutme.tex", payload["model_output"]["tailored_modules"])
             self.assertIn("Bachelor of Arts in Computer Science", payload["model_output"]["tailored_modules"]["aboutme.tex"])
             self.assertIn("Bachelor of Arts in Economics", payload["model_output"]["tailored_modules"]["aboutme.tex"])
-            self.assertIn("Senior Engineer role", payload["model_output"]["tailored_cv_tex"])
+            self.assertIn("Senior Engineer role", payload["model_output"]["tailored_letter_tex"])
             self.assertTrue(Path(tmpdir, "resume", "modules", "summary.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "experience.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "personalprojects.tex").exists())
             self.assertTrue(Path(tmpdir, "resume", "modules", "aboutme.tex").exists())
-            self.assertTrue(Path(tmpdir, "resume", "cv.tex").exists())
-            self.assertIn("Senior Engineer role", Path(tmpdir, "resume", "cv.tex").read_text(encoding="utf-8"))
+            self.assertTrue(Path(tmpdir, "resume", "letter.tex").exists())
+            self.assertIn("Senior Engineer role", Path(tmpdir, "resume", "letter.tex").read_text(encoding="utf-8"))
             if shutil.which("xelatex"):
                 self.assertTrue(Path(tmpdir, "demo-job.pdf").exists())
                 self.assertTrue(Path(tmpdir, "demo-job-cv.pdf").exists())
@@ -341,18 +341,6 @@ class TailorResumeTests(unittest.TestCase):
             recompile_mock.assert_called_once()
             parse_job_mock.assert_not_called()
 
-    def test_run_build_basic_mode_skips_parsing_pipeline(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("src.cli.parse_job") as parse_job_mock, patch(
-                "src.cli.build_basic_resume",
-                return_value={"output_dir": str(Path(tmpdir) / "output" / "general"), "pdf": str(Path(tmpdir) / "output" / "general" / "resume.pdf"), "compile_log": ""},
-            ) as basic_mock:
-                exit_code = run(None, None, str(Path(tmpdir) / "output" / "general"), None, build_basic=True)
-
-            self.assertEqual(exit_code, 0)
-            basic_mock.assert_called_once()
-            parse_job_mock.assert_not_called()
-
     def test_rebuild_from_job_packet_generates_outputs(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             packet_dir = Path(tmpdir) / "demo-job"
@@ -432,6 +420,11 @@ class TailorResumeTests(unittest.TestCase):
             self.assertTrue(log_dir.exists())
             self.assertEqual(list(output_dir.iterdir()), [])
             self.assertEqual(list(log_dir.iterdir()), [])
+
+    def test_load_listing_from_file_rejects_directories(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaisesRegex(ValueError, "not a file"):
+                load_listing_from_file(tmpdir)
 
 
 if __name__ == "__main__":

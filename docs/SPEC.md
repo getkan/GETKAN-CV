@@ -22,7 +22,6 @@ base resume in `resume/` and reviews generated output before sending it.
   company and title, fall back to the source URL or file, are slugified, and
   are de-duplicated with a numeric suffix within a batch run.
 - `rebuild` takes its job name from the packet's containing folder.
-- `build-base` compiles the untailored base resume.
 - `rebuild` regenerates tailored output from an existing `job_packet.json`,
   either for one packet or for every packet under the output tree (`--all`).
 - `rebuild -f/--force` re-fetches and re-parses the listing from the packet's
@@ -63,9 +62,9 @@ user-editable JSON files under `src/*/`.
   - Writes the normalized packet to `job_packet.json`.
 - **Tailoring phase** (`src/application/tailor_resume.py` + `src/application/deterministic_tailor.py`):
   - Loads the job packet and applies one-page layout profiles progressively.
-  - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `cv.tex` letter using the configured OpenRouter tailoring prompt.
+  - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `letter.tex` using the configured OpenRouter tailoring prompt.
   - Writes tailored modules to `output/<job_name>/resume/modules/`.
-  - Writes the tailored CV letter to `output/<job_name>/resume/cv.tex`.
+  - Writes the tailored CV letter to `output/<job_name>/resume/letter.tex`.
   - Compiles the resume and CV letter with `xelatex` to PDFs.
   - If page count ≤ 1, selects that profile and stops; otherwise uses the least constrained profile.
 - **Advice phase** (`src/application/advise.py`):
@@ -82,9 +81,6 @@ user-editable JSON files under `src/*/`.
 
 - `OPENROUTER_API_KEY` is read from the environment or a local `.env` and must
   never be written to `output/` or `log/`.
-- Personal identity fields (`RESUME_ADDRESS`, `RESUME_MOBILE`, `RESUME_EMAIL`)
-  are injected at render time from environment variables, not committed in the
-  base resume.
 - Listing URLs are user-supplied and fetched as untrusted content; extracted
   text is only used as model input and packet data, never executed.
 

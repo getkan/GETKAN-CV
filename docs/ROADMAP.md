@@ -39,9 +39,9 @@ Tailored resume modules, a tailored CV letter, and compiled PDFs per job, with p
 ### Included work
 
 - Module tailoring with deterministic rewriting in `src/application/deterministic_tailor.py`.
-- CV-letter tailoring from `resume/cv.tex` using the same LaTeX styling.
+- CV-letter tailoring from `resume/letter.tex` using the same LaTeX styling.
 - One-page fit profiles and progressive constraint application in `src/application/tailor_resume.py`.
-- `build`, `build-base`, and batch URL-list builds.
+- `build` and batch URL-list builds.
 - Artifact layout under `output/<job_name>/`.
 - XeLaTeX integration with workspace and local latexmk configuration.
 
@@ -52,7 +52,7 @@ Tailored resume modules, a tailored CV letter, and compiled PDFs per job, with p
 
 ### Exit criteria
 
-- Tailored `.tex` modules, tailored `cv.tex`, and published resume/CV PDFs are produced for a build run.
+- Tailored `.tex` modules, tailored `letter.tex`, and published resume/CV PDFs are produced for a build run.
 
 ### Validation
 

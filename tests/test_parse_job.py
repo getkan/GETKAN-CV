@@ -268,6 +268,33 @@ class ParseJobTests(unittest.TestCase):
 
         self.assertEqual(state["extracted_facts"]["employment_type"], "Full Time")
 
+    def test_extract_facts_handles_unhashable_payload_values(self):
+        state: JobParserState = {
+            "source": {"job_url": "https://example.com/jobs/1001"},
+            "raw_listing_text": "Title: Platform Engineer\nCompany: ExampleCo\n",
+            "extracted_facts": {},
+            "normalized_packet": {},
+            "confidence": 0.0,
+        }
+
+        with patch(
+            "src.application.parse_job._parse_job_with_openrouter",
+            return_value={
+                "title": ["Platform Engineer"],
+                "company": "ExampleCo",
+                "location": "Remote",
+                "employment_type": "Full-time",
+                "description": "Build platforms",
+                "must_have": ["Python"],
+                "nice_to_have": [],
+                "responsibilities": [],
+                "domain": "SaaS",
+            },
+        ):
+            extract_facts(state)
+
+        self.assertEqual(state["extracted_facts"]["company"], "ExampleCo")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -57,8 +57,6 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("-l", "--url-list-file", dest="url_list_file")
     build.add_argument("-o", "--output", dest="output_dir")
     build.add_argument("--model", dest="model_name")
-    build_base = commands.add_parser("build-base")
-    build_base.add_argument("-o", "--output", dest="output_dir")
     rebuild = commands.add_parser("rebuild")
     rebuild.add_argument("job_packet_file", nargs="?")
     rebuild.add_argument("--all", action="store_true")
@@ -78,6 +76,24 @@ ROLE_DEFAULT_MODELS: dict[str, str] = {
     "ADVISOR": "openai/gpt-4.1-mini",
 }
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_RESUME_DIR = REPO_ROOT / "resume"
+
+
+def _require_resume_source(modules_only: bool = False) -> Path:
+    modules_dir = REPO_RESUME_DIR / "modules"
+    if not (REPO_RESUME_DIR / "resume.tex").exists() or not modules_dir.is_dir():
+        raise FileNotFoundError(
+            f"Base resume source not found at {REPO_RESUME_DIR}. "
+            "Copy resume.example/ to resume/ and fill in your details before building."
+        )
+    if not modules_only and not (REPO_RESUME_DIR / "letter.tex").exists():
+        raise FileNotFoundError(
+            f"Base letter source not found at {REPO_RESUME_DIR / 'letter.tex'}. "
+            "Copy resume.example/ to resume/ and fill in your details before building."
+        )
+    return REPO_RESUME_DIR
+
 
 def load_listing_from_file(file_path: Optional[str]) -> str:
     if not file_path:
@@ -85,6 +101,8 @@ def load_listing_from_file(file_path: Optional[str]) -> str:
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Input file not found: {file_path}")
+    if not path.is_file():
+        raise ValueError(f"Input path is not a file: {file_path}")
     return path.read_text(encoding="utf-8")
 
 
@@ -107,7 +125,7 @@ def _resolve_model_for_role(role: str, cli_override: Optional[str]) -> Optional[
     if cli_override:
         return cli_override
 
-    load_dotenv(Path.cwd() / ".env")
+    load_dotenv(REPO_ROOT / ".env")
     role_key = f"OPENROUTER_MODEL_{role.upper()}"
     return os.getenv(role_key) or os.getenv("OPENROUTER_MODEL") or ROLE_DEFAULT_MODELS.get(role.upper())
 
@@ -264,6 +282,7 @@ def _run_single_tailor(
 
     output_root = Path(output_dir) if output_dir else (output_base / job_name)
     output_root.mkdir(parents=True, exist_ok=True)
+    _require_resume_source()
 
     compatibility_score = job_packet.get("compatibility_score", 0)
     success_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
@@ -288,62 +307,6 @@ def _run_single_tailor(
         "compatibility_score": compatibility_score,
         "success_log": success_log_path,
     }
-
-
-def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
-    with StatusSpinner("Building base resume and compiling PDF"):
-        repo_root = Path(__file__).resolve().parent.parent
-        resume_dir = repo_root / "resume"
-        destination = Path(output_dir) if output_dir else Path.cwd() / "output" / "general"
-        destination.mkdir(parents=True, exist_ok=True)
-        resume_output_root = destination / "resume"
-        resume_output_root.mkdir(parents=True, exist_ok=True)
-
-        shutil.copy2(repo_root / "getkan-cv.cls", resume_output_root / "getkan-cv.cls")
-        shutil.copytree(resume_dir / "modules", resume_output_root / "modules", dirs_exist_ok=True)
-        fonts_dir = resume_dir / "fonts"
-        if fonts_dir.exists():
-            shutil.copytree(fonts_dir, resume_output_root / "fonts", dirs_exist_ok=True)
-
-        resume_text = (resume_dir / "resume.tex").read_text(encoding="utf-8")
-        resume_text = resume_text.replace("\\documentclass[11pt, letterpaper]{../getkan-cv}", "\\documentclass[11pt, letterpaper]{getkan-cv}")
-        resume_text = resume_text.replace("\\fontdir[../fonts/]", "\\fontdir[fonts/]")
-        resume_text = render_env_placeholders(resume_text)
-        (resume_output_root / "resume.tex").write_text(resume_text, encoding="utf-8")
-
-        xelatex = shutil.which("xelatex")
-        if not xelatex:
-            raise RuntimeError("xelatex not available on PATH")
-
-        logs: list[str] = []
-        for pass_index in range(2):
-            result = subprocess.run(
-                [xelatex, "-interaction=nonstopmode", "-halt-on-error", "resume.tex"],
-                cwd=resume_output_root,
-                capture_output=True,
-                text=True,
-            )
-            logs.append(f"pass {pass_index + 1} exit={result.returncode}")
-            if result.stdout:
-                logs.append(result.stdout[-1200:])
-            if result.stderr:
-                logs.append(result.stderr[-1200:])
-            if result.returncode != 0:
-                tail = (result.stdout or "")[-1200:] or (result.stderr or "")[-1200:]
-                raise RuntimeError(
-                    f"Basic resume compile failed on pass {pass_index + 1} "
-                    f"(exit={result.returncode}):\n{tail}"
-                )
-
-        compiled_pdf = resume_output_root / "resume.pdf"
-        pdf_path = destination / "resume.pdf"
-        if compiled_pdf.exists():
-            shutil.copy2(compiled_pdf, pdf_path)
-        return {
-            "output_dir": str(destination),
-            "pdf": str(pdf_path if pdf_path.exists() else ""),
-            "compile_log": "\n".join(logs),
-        }
 
 
 def _refresh_packet_from_source(packet_payload: dict[str, Any], job_packet_file: str) -> dict[str, Any]:
@@ -382,6 +345,9 @@ def rebuild_from_job_packet(
     inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
     effective_name = _slugify(inferred_name)
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / effective_name)
+
+    if not _validation_errors(packet_payload):
+        _require_resume_source()
 
     resolved_tailor_model = _resolve_model_for_role("TAILOR", model_name)
     resolved_parser_model = _resolve_model_for_role("PARSER", model_name)
@@ -481,7 +447,6 @@ def run(
     job_url: Optional[str],
     output_dir: Optional[str],
     model_name: Optional[str],
-    build_basic: bool = False,
     recompile_existing: bool = False,
     job_hunt_advice: bool = False,
     job_packet_files: list[str] | None = None,
@@ -500,20 +465,6 @@ def run(
                     "job_packet_count": recommendations.get("packet_count", 0),
                     "model_name": advisor_model or "",
                     "mode": "job-hunt-advice",
-                },
-                indent=2,
-            )
-        )
-        return 0
-
-    if build_basic:
-        basic_result = build_basic_resume(output_dir)
-        print(
-            json.dumps(
-                {
-                    "output_dir": basic_result["output_dir"],
-                    "pdf": basic_result["pdf"],
-                    "mode": "build-basic",
                 },
                 indent=2,
             )
@@ -550,6 +501,8 @@ def run(
                         )
                     )
                     continue
+
+                _require_resume_source()
 
                 output_root = output_base / auto_name
                 output_root.mkdir(parents=True, exist_ok=True)
@@ -656,13 +609,9 @@ def main() -> int:
                 args.model_name,
                 False,
                 False,
-                False,
                 None,
                 args.url_list_file,
             )
-
-        if args.command == "build-base":
-            return run(None, None, args.output_dir, None, build_basic=True)
 
         if args.command == "rebuild":
             if args.all:

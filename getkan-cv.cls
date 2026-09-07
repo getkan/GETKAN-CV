@@ -144,7 +144,7 @@
 %                Configuration for fonts
 %-------------------------------------------------------------------------------
 % Set the FontAwesome/Roboto fonts after user preamble commands (e.g. \fontdir)
-% are processed, so path overrides in cv.tex/resume.tex are honored.
+% are processed, so path overrides in letter.tex/resume.tex are honored.
 \AtBeginDocument{%
   % Set the FontAwesome font to be up-to-date.
   \setfontfamily\FA[Path=\@fontdir]{FontAwesome}
