@@ -638,7 +638,7 @@ def extract_facts(state: JobParserState) -> JobParserState:
                 stripped = value.strip()
                 return not stripped or stripped.lower() == "unknown"
             if isinstance(value, (list, dict, tuple, set)):
-                return not value
+                return True
             return False
 
         if not _is_placeholder(primary):
