@@ -8,7 +8,7 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 
 - Parses a job listing into a normalized job packet.
 - Tailors selected resume modules (`summary.tex`, `experience.tex`, `personalprojects.tex`, `aboutme.tex`).
-- Tailors `cv.tex` as a short letter of introduction for the target employer and role.
+- Tailors `letter.tex` as a short letter of introduction for the target employer and role.
 - Uses OpenRouter to generate the tailored module content. `OPENROUTER_API_KEY` is required for tailoring; missing credentials, request failures, or invalid model output stop the run without generating a fallback resume.
 - Writes generated artifacts to a dedicated output folder.
 - Compiles LaTeX PDFs using `xelatex`.
@@ -76,7 +76,7 @@ getkan-cv.cls
 resume/
   fonts/
   resume.tex
-  cv.tex
+  letter.tex
   modules/
     summary.tex
     experience.tex
@@ -92,7 +92,7 @@ resume/
   - Main resume entrypoint.
   - Sets page geometry, color theme, fonts, and header/footer identity fields.
   - Imports active content modules using `\input{modules/...}`.
-- `resume/cv.tex`
+- `resume/letter.tex`
   - Main CV-letter entrypoint.
   - Uses the same class, font, header, footer, and cover-letter macros as the resume styling.
   - Provides the base short letter that tailored runs customize for the target employer.
@@ -120,7 +120,7 @@ For each tailored run, TeX files are copied/generated into:
 
 - `output/<job_name>/resume/resume.tex`
   - Compilable run-specific root file.
-- `output/<job_name>/resume/cv.tex`
+- `output/<job_name>/resume/letter.tex`
   - Compilable run-specific CV letter file.
 - `output/<job_name>/resume/modules/*.tex`
   - Tailored versions of section modules used for that job target.
@@ -416,7 +416,7 @@ For a run like `./tailor-resume build -u <job_url>`:
 - `output/github-careers/job_packet.json`: Parsed and normalized job data.
 - `output/github-careers/tailored_resume.json`: Tailoring payload + compile metadata.
 - `output/github-careers/resume/resume.tex`: Compilable resume root.
-- `output/github-careers/resume/cv.tex`: Compilable tailored CV letter.
+- `output/github-careers/resume/letter.tex`: Compilable tailored CV letter.
 - `output/github-careers/resume/modules/*.tex`: Tailored module files.
 - `output/github-careers/github-careers.pdf`: Final resume PDF output.
 - `output/github-careers/github-careers-cv.pdf`: Final CV-letter PDF output.
@@ -446,7 +446,7 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 1. Run `build` from URL/file or URL-list.
 2. Inspect generated modules in `output/<job_name>/resume/modules`.
 3. Optionally edit `job_packet.json` or generated module files.
-4. Optionally inspect or edit the generated CV letter at `output/<job_name>/resume/cv.tex`.
+4. Optionally inspect or edit the generated CV letter at `output/<job_name>/resume/letter.tex`.
 5. Run `rebuild` with the packet path to regenerate outputs.
 6. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
 
@@ -471,8 +471,8 @@ For a non-tailored base resume build, use `build-base`.
    - Profile 2: moderate constraints (summary_sentences=2, cvsubitems_limit=3, word_limit=24)
    - Profile 3: maximum constraints (summary_sentences=1, cvsubitems_limit=2, word_limit=18)
 3. For each profile:
-  - `src/application/tailor_resume.py` requests tailored resume modules and a tailored `cv.tex` from OpenRouter using JSON schema output.
-  - Modules are written to `output/<job_name>/resume/modules/` and the CV letter is written to `output/<job_name>/resume/cv.tex`.
+  - `src/application/tailor_resume.py` requests tailored resume modules and a tailored `letter.tex` from OpenRouter using JSON schema output.
+  - Modules are written to `output/<job_name>/resume/modules/` and the CV letter is written to `output/<job_name>/resume/letter.tex`.
   - XeLaTeX compiles the resume and CV letter to PDFs.
    - Page count is checked; if ≤ 1 page, the profile is selected and tailoring stops.
 4. If no profile fits to one page, the least constrained profile is used.

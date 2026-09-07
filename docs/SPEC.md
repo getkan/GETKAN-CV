@@ -63,9 +63,9 @@ user-editable JSON files under `src/*/`.
   - Writes the normalized packet to `job_packet.json`.
 - **Tailoring phase** (`src/application/tailor_resume.py` + `src/application/deterministic_tailor.py`):
   - Loads the job packet and applies one-page layout profiles progressively.
-  - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `cv.tex` letter using the configured OpenRouter tailoring prompt.
+  - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `letter.tex` using the configured OpenRouter tailoring prompt.
   - Writes tailored modules to `output/<job_name>/resume/modules/`.
-  - Writes the tailored CV letter to `output/<job_name>/resume/cv.tex`.
+  - Writes the tailored CV letter to `output/<job_name>/resume/letter.tex`.
   - Compiles the resume and CV letter with `xelatex` to PDFs.
   - If page count ≤ 1, selects that profile and stops; otherwise uses the least constrained profile.
 - **Advice phase** (`src/application/advise.py`):
