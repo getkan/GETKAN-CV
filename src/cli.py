@@ -314,7 +314,7 @@ def _run_single_tailor(
 def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
     with StatusSpinner("Building base resume and compiling PDF"):
         repo_root = REPO_ROOT
-        resume_dir = _require_resume_source()
+        resume_dir = _require_resume_source(modules_only=True)
         destination = Path(output_dir) if output_dir else Path.cwd() / "output" / "general"
         destination.mkdir(parents=True, exist_ok=True)
         resume_output_root = destination / "resume"
