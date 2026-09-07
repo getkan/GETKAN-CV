@@ -262,25 +262,7 @@ output/<job_name>
 The URL list file should contain one URL per line (blank lines and lines starting with `#` are ignored).
 Job names are generated from parsed company/title (falling back to the URL), de-duplicated with a numeric suffix, and each run writes to its own output folder.
 
-### 2) Build base resume (no tailoring)
-
-```bash
-./tailor-resume build-base
-```
-
-Optional custom output directory:
-
-```bash
-./tailor-resume build-base -o <output_dir>
-```
-
-Default output when `-o` is omitted:
-
-```text
-output/general
-```
-
-### 3) Rebuild from an existing job_packet.json
+### 2) Rebuild from an existing job_packet.json
 
 Use this when you manually edit a `job_packet.json` and want regenerated tailored modules, CV letter, and PDFs from that packet.
 
@@ -449,8 +431,6 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 4. Optionally inspect or edit the generated CV letter at `output/<job_name>/resume/letter.tex`.
 5. Run `rebuild` with the packet path to regenerate outputs.
 6. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
-
-For a non-tailored base resume build, use `build-base`.
 
 ## Architecture & Data Flow
 

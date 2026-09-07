@@ -22,7 +22,6 @@ base resume in `resume/` and reviews generated output before sending it.
   company and title, fall back to the source URL or file, are slugified, and
   are de-duplicated with a numeric suffix within a batch run.
 - `rebuild` takes its job name from the packet's containing folder.
-- `build-base` compiles the untailored base resume.
 - `rebuild` regenerates tailored output from an existing `job_packet.json`,
   either for one packet or for every packet under the output tree (`--all`).
 - `rebuild -f/--force` re-fetches and re-parses the listing from the packet's

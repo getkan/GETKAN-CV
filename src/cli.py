@@ -57,8 +57,6 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("-l", "--url-list-file", dest="url_list_file")
     build.add_argument("-o", "--output", dest="output_dir")
     build.add_argument("--model", dest="model_name")
-    build_base = commands.add_parser("build-base")
-    build_base.add_argument("-o", "--output", dest="output_dir")
     rebuild = commands.add_parser("rebuild")
     rebuild.add_argument("job_packet_file", nargs="?")
     rebuild.add_argument("--all", action="store_true")
@@ -311,62 +309,6 @@ def _run_single_tailor(
     }
 
 
-def build_basic_resume(output_dir: Optional[str]) -> dict[str, str]:
-    with StatusSpinner("Building base resume and compiling PDF"):
-        repo_root = REPO_ROOT
-        resume_dir = _require_resume_source(modules_only=True)
-        destination = Path(output_dir) if output_dir else Path.cwd() / "output" / "general"
-        destination.mkdir(parents=True, exist_ok=True)
-        resume_output_root = destination / "resume"
-        resume_output_root.mkdir(parents=True, exist_ok=True)
-
-        shutil.copy2(repo_root / "getkan-cv.cls", resume_output_root / "getkan-cv.cls")
-        shutil.copytree(resume_dir / "modules", resume_output_root / "modules", dirs_exist_ok=True)
-        fonts_dir = resume_dir / "fonts"
-        if fonts_dir.exists():
-            shutil.copytree(fonts_dir, resume_output_root / "fonts", dirs_exist_ok=True)
-
-        resume_text = (resume_dir / "resume.tex").read_text(encoding="utf-8")
-        resume_text = resume_text.replace("\\documentclass[11pt, letterpaper]{../getkan-cv}", "\\documentclass[11pt, letterpaper]{getkan-cv}")
-        resume_text = resume_text.replace("\\fontdir[../fonts/]", "\\fontdir[fonts/]")
-        resume_text = render_env_placeholders(resume_text)
-        (resume_output_root / "resume.tex").write_text(resume_text, encoding="utf-8")
-
-        xelatex = shutil.which("xelatex")
-        if not xelatex:
-            raise RuntimeError("xelatex not available on PATH")
-
-        logs: list[str] = []
-        for pass_index in range(2):
-            result = subprocess.run(
-                [xelatex, "-interaction=nonstopmode", "-halt-on-error", "resume.tex"],
-                cwd=resume_output_root,
-                capture_output=True,
-                text=True,
-            )
-            logs.append(f"pass {pass_index + 1} exit={result.returncode}")
-            if result.stdout:
-                logs.append(result.stdout[-1200:])
-            if result.stderr:
-                logs.append(result.stderr[-1200:])
-            if result.returncode != 0:
-                tail = (result.stdout or "")[-1200:] or (result.stderr or "")[-1200:]
-                raise RuntimeError(
-                    f"Basic resume compile failed on pass {pass_index + 1} "
-                    f"(exit={result.returncode}):\n{tail}"
-                )
-
-        compiled_pdf = resume_output_root / "resume.pdf"
-        pdf_path = destination / "resume.pdf"
-        if compiled_pdf.exists():
-            shutil.copy2(compiled_pdf, pdf_path)
-        return {
-            "output_dir": str(destination),
-            "pdf": str(pdf_path if pdf_path.exists() else ""),
-            "compile_log": "\n".join(logs),
-        }
-
-
 def _refresh_packet_from_source(packet_payload: dict[str, Any], job_packet_file: str) -> dict[str, Any]:
     metadata = packet_payload.get("metadata") if isinstance(packet_payload.get("metadata"), dict) else {}
     source_url = str(metadata.get("source_url") or "").strip()
@@ -505,7 +447,6 @@ def run(
     job_url: Optional[str],
     output_dir: Optional[str],
     model_name: Optional[str],
-    build_basic: bool = False,
     recompile_existing: bool = False,
     job_hunt_advice: bool = False,
     job_packet_files: list[str] | None = None,
@@ -524,20 +465,6 @@ def run(
                     "job_packet_count": recommendations.get("packet_count", 0),
                     "model_name": advisor_model or "",
                     "mode": "job-hunt-advice",
-                },
-                indent=2,
-            )
-        )
-        return 0
-
-    if build_basic:
-        basic_result = build_basic_resume(output_dir)
-        print(
-            json.dumps(
-                {
-                    "output_dir": basic_result["output_dir"],
-                    "pdf": basic_result["pdf"],
-                    "mode": "build-basic",
                 },
                 indent=2,
             )
@@ -682,13 +609,9 @@ def main() -> int:
                 args.model_name,
                 False,
                 False,
-                False,
                 None,
                 args.url_list_file,
             )
-
-        if args.command == "build-base":
-            return run(None, None, args.output_dir, None, build_basic=True)
 
         if args.command == "rebuild":
             if args.all:

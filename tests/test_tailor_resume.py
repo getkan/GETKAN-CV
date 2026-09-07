@@ -341,18 +341,6 @@ class TailorResumeTests(unittest.TestCase):
             recompile_mock.assert_called_once()
             parse_job_mock.assert_not_called()
 
-    def test_run_build_basic_mode_skips_parsing_pipeline(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("src.cli.parse_job") as parse_job_mock, patch(
-                "src.cli.build_basic_resume",
-                return_value={"output_dir": str(Path(tmpdir) / "output" / "general"), "pdf": str(Path(tmpdir) / "output" / "general" / "resume.pdf"), "compile_log": ""},
-            ) as basic_mock:
-                exit_code = run(None, None, str(Path(tmpdir) / "output" / "general"), None, build_basic=True)
-
-            self.assertEqual(exit_code, 0)
-            basic_mock.assert_called_once()
-            parse_job_mock.assert_not_called()
-
     def test_rebuild_from_job_packet_generates_outputs(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             packet_dir = Path(tmpdir) / "demo-job"
