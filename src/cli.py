@@ -199,6 +199,32 @@ def _record_failed_packet(
     }
 
 
+def _write_job_artifacts(
+    output_root: Path,
+    job_packet: dict[str, Any],
+    tailored_payload: dict[str, Any],
+    raw_listing_text: str = "",
+) -> dict[str, Path]:
+    job_root = output_root / "job"
+    job_root.mkdir(parents=True, exist_ok=True)
+
+    metadata = job_packet.get("metadata") if isinstance(job_packet.get("metadata"), dict) else {}
+    raw_text = raw_listing_text or str(metadata.get("raw_listing_text") or "")
+    raw_listing_path = job_root / "raw_listing_text.txt"
+    raw_listing_path.write_text(raw_text, encoding="utf-8")
+
+    packet_path = job_root / "job_packet.json"
+    packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
+
+    summary_path = job_root / "tailored_resume.json"
+    summary_path.write_text(json.dumps(tailored_payload, indent=2), encoding="utf-8")
+    return {
+        "raw_listing": raw_listing_path,
+        "job_packet": packet_path,
+        "summary": summary_path,
+    }
+
+
 def _clear_directory_contents(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     for entry in directory.iterdir():
@@ -287,15 +313,12 @@ def _run_single_tailor(
     compatibility_score = job_packet.get("compatibility_score", 0)
     success_log_path = append_source_log(job_name, file_path, job_url, compatibility_score, model_name=resolved_tailor_model)
 
-    packet_path = output_root / "job_packet.json"
-    packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
-
     with StatusSpinner(f"Tailoring resume modules and compiling PDF for {job_name}"):
         payload = build_tailored_payload(job_packet, job_name=job_name, output_dir=str(output_root), model_name=resolved_tailor_model)
     payload["compatibility_score"] = compatibility_score
-
-    summary_path = output_root / "tailored_resume.json"
-    summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    artifact_paths = _write_job_artifacts(output_root, job_packet, payload, raw_listing_text=listing_text)
+    packet_path = artifact_paths["job_packet"]
+    summary_path = artifact_paths["summary"]
 
     return {
         "job_name": job_name,
@@ -342,7 +365,10 @@ def rebuild_from_job_packet(
         source_url = str(metadata.get("source_url") or "").strip() or None
         packet_payload = _refresh_packet_from_source(packet_payload, job_packet_file)
 
-    inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
+    if packet_path.name == "job_packet.json" and packet_path.parent.name == "job":
+        inferred_name = packet_path.parent.parent.name
+    else:
+        inferred_name = packet_path.parent.name if packet_path.name == "job_packet.json" else packet_path.stem
     effective_name = _slugify(inferred_name)
     output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / effective_name)
 
@@ -386,7 +412,9 @@ def rebuild_from_job_packet(
         model_name=resolved_tailor_model,
     )
 
-    output_packet_path = output_root / "job_packet.json"
+    artifact_job_root = output_root / "job"
+    artifact_job_root.mkdir(parents=True, exist_ok=True)
+    output_packet_path = artifact_job_root / "job_packet.json"
     serialized_packet = json.dumps(packet_payload, indent=2)
     output_packet_path.write_text(serialized_packet, encoding="utf-8")
     if force and output_packet_path.resolve() != packet_path.resolve():
@@ -395,8 +423,8 @@ def rebuild_from_job_packet(
     with StatusSpinner(f"Tailoring resume modules and compiling PDF for {effective_name}"):
         payload = build_tailored_payload(packet_payload, job_name=effective_name, output_dir=str(output_root), model_name=resolved_tailor_model)
     payload["compatibility_score"] = compatibility_score
-    summary_path = output_root / "tailored_resume.json"
-    summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    artifact_paths = _write_job_artifacts(output_root, packet_payload, payload)
+    summary_path = artifact_paths["summary"]
 
     return {
         "mode": "rebuild",
@@ -423,7 +451,7 @@ def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Option
 
     rebuilds: list[dict[str, Any]] = []
     for packet_path in packet_files:
-        packet_output_dir = packet_path.parent
+        packet_output_dir = packet_path.parent.parent if packet_path.parent.name == "job" else packet_path.parent
         rebuilds.append(
             rebuild_from_job_packet(
                 str(packet_path),
@@ -509,12 +537,11 @@ def run(
 
                 compatibility_score = job_packet.get("compatibility_score", 0)
                 success_log_path = append_source_log(auto_name, None, url, compatibility_score, model_name=resolved_tailor_model)
-                packet_path = output_root / "job_packet.json"
-                packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
                 payload = build_tailored_payload(job_packet, job_name=auto_name, output_dir=str(output_root), model_name=resolved_tailor_model)
                 payload["compatibility_score"] = compatibility_score
-                summary_path = output_root / "tailored_resume.json"
-                summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+                artifact_paths = _write_job_artifacts(output_root, job_packet, payload)
+                packet_path = artifact_paths["job_packet"]
+                summary_path = artifact_paths["summary"]
 
                 batch_results.append(
                     {

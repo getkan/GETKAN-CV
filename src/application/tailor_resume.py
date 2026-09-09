@@ -228,7 +228,9 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
     letter_text = render_env_placeholders(letter_text)
     letter_target.write_text(letter_text, encoding="utf-8")
 
-    output_path = destination / "tailored_resume.json"
+    job_destination = destination / "job"
+    job_destination.mkdir(parents=True, exist_ok=True)
+    output_path = job_destination / "tailored_resume.json"
     output_path.write_text(json.dumps(state["model_output"], indent=2), encoding="utf-8")
     return {
         "output_path": str(output_path),

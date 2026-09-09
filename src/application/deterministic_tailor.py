@@ -15,7 +15,7 @@ DEFAULT_SKILLS: dict[str, list[str]] = {
     "devops_and_delivery": ["Git", "Docker", "GitHub Actions"],
     "testing_and_quality": ["Jest", "Vue Test Utils", "Unit Testing", "Integration Testing", "Test Strategy"],
 }
-SKILLS_CONFIG_PATH = Path(__file__).resolve().parents[2] / "resume" / "modules" / "skills.json"
+SKILLS_CONFIG_PATH = Path(__file__).resolve().parents[2] / "resume" / "skills.json"
 
 def _load_skills_config() -> dict[str, list[str]]:
     if not SKILLS_CONFIG_PATH.exists():

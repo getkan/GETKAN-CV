@@ -189,7 +189,7 @@ class TailorResumeTests(unittest.TestCase):
             else:
                 self.assertEqual(payload["compile"]["pdf_path"], "")
                 self.assertEqual(payload["compile"]["cv_pdf_path"], "")
-            self.assertTrue(Path(tmpdir, "tailored_resume.json").exists())
+            self.assertTrue(Path(tmpdir, "job", "tailored_resume.json").exists())
 
     def test_run_uses_current_working_directory_for_default_output(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -210,7 +210,7 @@ class TailorResumeTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             output_dir = Path(tmpdir) / "output" / "acme-senior-engineer"
             self.assertTrue(output_dir.exists())
-            self.assertTrue((output_dir / "tailored_resume.json").exists())
+            self.assertTrue((output_dir / "job" / "tailored_resume.json").exists())
 
     def test_run_writes_source_history_log(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -343,7 +343,7 @@ class TailorResumeTests(unittest.TestCase):
 
     def test_rebuild_from_job_packet_generates_outputs(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            packet_dir = Path(tmpdir) / "demo-job"
+            packet_dir = Path(tmpdir) / "demo-job" / "job"
             packet_dir.mkdir(parents=True, exist_ok=True)
             packet_path = packet_dir / "job_packet.json"
             packet_path.write_text(
@@ -400,8 +400,8 @@ class TailorResumeTests(unittest.TestCase):
 
             self.assertEqual(result["packet_count"], 2)
             self.assertEqual([entry["job_name"] for entry in result["rebuilds"]], ["alpha", "beta"])
-            self.assertTrue((first_dir / "tailored_resume.json").exists())
-            self.assertTrue((second_dir / "tailored_resume.json").exists())
+            self.assertTrue((first_dir / "job" / "tailored_resume.json").exists())
+            self.assertTrue((second_dir / "job" / "tailored_resume.json").exists())
 
     def test_clean_workspace_artifacts_removes_output_and_log_contents(self):
         with tempfile.TemporaryDirectory() as tmpdir:

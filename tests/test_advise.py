@@ -123,7 +123,9 @@ class AdviseTests(unittest.TestCase):
             (modules_dir / "experience.tex").write_text("Built backend services and mentored engineers.", encoding="utf-8")
             (modules_dir / "personalprojects.tex").write_text("Project work in automation.", encoding="utf-8")
             (modules_dir / "aboutme.tex").write_text("Hands-on builder.", encoding="utf-8")
-            (modules_dir / "skills.json").write_text(
+            
+            (Path(tmpdir) / "resume").mkdir(parents=True, exist_ok=True)
+            (Path(tmpdir) / "resume" / "skills.json").write_text(
                 json.dumps(
                     {
                         "programming_languages": ["Python", "TypeScript"],

@@ -71,6 +71,7 @@ class ParseJobTests(unittest.TestCase):
 
         self.assertEqual(packet["job"]["company"], "ExampleCo")
         self.assertEqual(packet["metadata"]["validation_errors"], [])
+        self.assertEqual(packet["metadata"]["raw_listing_text"], "Listing")
         self.assertIn("compatibility_score", packet)
 
     def test_calculate_compatibility_score_partial_long_requirement(self):
@@ -204,9 +205,11 @@ class ParseJobTests(unittest.TestCase):
             }
 
             result = handoff_to_tailor(state, output_dir=tmpdir)
-            output_path = Path(tmpdir) / "job_packet.json"
+            output_path = Path(tmpdir) / "job" / "job_packet.json"
+            raw_listing_path = Path(tmpdir) / "job" / "raw_listing_text.txt"
 
             self.assertTrue(output_path.exists())
+            self.assertEqual(raw_listing_path.read_text(encoding="utf-8"), state["raw_listing_text"])
             payload = json.loads(output_path.read_text())
             self.assertEqual(payload["job"]["title"], "Staff Product Engineer")
             self.assertEqual(result["output_path"], str(output_path))

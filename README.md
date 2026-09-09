@@ -54,10 +54,10 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 
 ### `resume/`
 
-- `resume/modules/skills.json`: Editable technical skills catalog used by tailoring allowlist prioritization.
+- `resume/skills.json`: Editable technical skills catalog used by tailoring allowlist prioritization.
 - `resume/`: Source resume and base modules.
 
-Skills categories in `resume/modules/skills.json` also influence bullet prioritization strength during tailoring (for example testing-focused roles prioritize testing-heavy bullets).
+Skills categories in `resume/skills.json` also influence bullet prioritization strength during tailoring (for example testing-focused roles prioritize testing-heavy bullets).
 
 ### `output/`
 

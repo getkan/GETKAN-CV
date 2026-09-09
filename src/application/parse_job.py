@@ -505,6 +505,7 @@ def parse_job(*, job_url: str | None = None, listing_text: str = "") -> dict[str
     normalize_packet(state)
     validate_packet(state)
     calculate_packet_compatibility_score(state)
+    state["normalized_packet"].setdefault("metadata", {})["raw_listing_text"] = state.get("raw_listing_text", "")
     return state["normalized_packet"]
 
 
@@ -515,9 +516,11 @@ def handoff_to_tailor(state: JobParserState, output_dir: str | Path | None = Non
         calculate_compatibility_score(state)
 
     destination = Path(output_dir or "output/tailored/default")
-    destination.mkdir(parents=True, exist_ok=True)
-    output_path = destination / "job_packet.json"
+    job_destination = destination / "job"
+    job_destination.mkdir(parents=True, exist_ok=True)
+    output_path = job_destination / "job_packet.json"
     output_path.write_text(json.dumps(state["normalized_packet"], indent=2), encoding="utf-8")
+    (job_destination / "raw_listing_text.txt").write_text(state.get("raw_listing_text", ""), encoding="utf-8")
 
     return {
         "output_path": str(output_path),
@@ -829,6 +832,7 @@ def _clean_list(items: list[str] | None) -> list[str]:
 
 # Compatibility Scoring Helpers
 def _resume_summary() -> str:
+    repo_root = Path(__file__).resolve().parents[2]
     modules_dir = repo_root / "resume" / "modules"
     if not modules_dir.is_dir() or any(not (modules_dir / name).is_file() for name in RESUME_MODULE_NAMES):
         raise FileNotFoundError(
@@ -857,7 +861,7 @@ def _resume_match_corpus() -> str:
         if path.exists():
             parts.append(path.read_text(encoding="utf-8"))
 
-    skills_path = modules_dir / "skills.json"
+    skills_path = repo_root / "resume" / "skills.json"
     if skills_path.exists():
         try:
             payload = json.loads(skills_path.read_text(encoding="utf-8"))
@@ -872,7 +876,7 @@ def _resume_match_corpus() -> str:
 
 def _known_skill_terms() -> list[str]:
     repo_root = Path(__file__).resolve().parents[2]
-    skills_path = repo_root / "resume" / "modules" / "skills.json"
+    skills_path = repo_root / "resume" / "skills.json"
     terms: list[str] = []
     if skills_path.exists():
         try:
