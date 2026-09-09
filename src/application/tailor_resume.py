@@ -276,8 +276,8 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
     output_dir = Path(artifacts.get("output_dir") or source_root.parent)
     job_name = str(artifacts.get("job_name") or output_dir.name)
     safe_job_name = re.sub(r"[^A-Za-z0-9._-]", "-", job_name).strip("-") or "resume"
-    published_pdf = output_dir / f"{safe_job_name}.pdf"
-    published_cv_pdf = output_dir / f"{safe_job_name}-cv.pdf"
+    published_resume_pdf = output_dir / f"{safe_job_name}-resume.pdf"
+    published_letter_pdf = output_dir / f"{safe_job_name}-letter.pdf"
     logs: list[str] = []
 
     if resume_tex.exists():
@@ -285,28 +285,28 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
     if letter_tex.exists():
         letter_tex.write_text(render_env_placeholders(letter_tex.read_text(encoding="utf-8")), encoding="utf-8")
 
-    resume_ok, resume_logs = _compile_tex_to_pdf(xelatex, source_root, "resume.tex", published_pdf)
+    resume_ok, resume_logs = _compile_tex_to_pdf(xelatex, source_root, "resume.tex", published_resume_pdf)
     logs.extend(resume_logs)
     if not resume_ok:
         return {"compile_log": "\n".join(logs), "summary": "Tailoring completed, resume PDF compile failed", "pdf_path": "", "cv_pdf_path": ""}
 
     cv_pdf_path = ""
     if letter_tex.exists():
-        letter_ok, letter_logs = _compile_tex_to_pdf(xelatex, source_root, "letter.tex", published_cv_pdf)
+        letter_ok, letter_logs = _compile_tex_to_pdf(xelatex, source_root, "letter.tex", published_letter_pdf)
         logs.extend(letter_logs)
         if not letter_ok:
             return {
                 "compile_log": "\n".join(logs),
                 "summary": "Tailoring completed, CV PDF compile failed",
-                "pdf_path": str(published_pdf if published_pdf.exists() else ""),
+                "pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
                 "cv_pdf_path": "",
             }
-        cv_pdf_path = str(published_cv_pdf if published_cv_pdf.exists() else "")
+        cv_pdf_path = str(published_letter_pdf if published_letter_pdf.exists() else "")
 
     return {
         "compile_log": "\n".join(logs),
         "summary": "Tailoring completed and PDFs compiled",
-        "pdf_path": str(published_pdf if published_pdf.exists() else ""),
+        "resume_pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
         "cv_pdf_path": cv_pdf_path,
     }
 

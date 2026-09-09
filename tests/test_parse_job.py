@@ -9,6 +9,7 @@ Validates the parsing phase of the resume tailoring workflow:
 - Handoff to the tailoring phase with structured output
 """
 import json
+import io
 import os
 import tempfile
 import unittest
@@ -30,6 +31,106 @@ from src.infrastructure.environment import load_dotenv
 
 
 class ParseJobTests(unittest.TestCase):
+    def test_fetch_or_load_listing_prefers_jsonld_description_over_javascript_shell(self):
+        payload = """
+        <html><body>You need to enable JavaScript to run this app.</body>
+        <script type="application/ld+json">
+        {"@type":"JobPosting","description":"<p>Tools: React, TypeScript, and GraphQL</p>"}
+        </script></html>
+        """
+        state: JobParserState = {
+            "source": {"job_url": "https://example.com/jobs/structured", "listing_text": ""},
+            "raw_listing_text": "",
+            "extracted_facts": {},
+            "normalized_packet": {},
+            "confidence": 0.0,
+        }
+
+        response = io.BytesIO(payload.encode("utf-8"))
+        response.__enter__ = lambda: response
+        response.__exit__ = lambda *args: None
+        with patch("src.application.parse_job.urlopen", return_value=response):
+            fetch_or_load_listing(state)
+
+        self.assertIn("React", state["raw_listing_text"])
+        self.assertIn("GraphQL", state["raw_listing_text"])
+        self.assertNotIn("enable JavaScript", state["raw_listing_text"])
+
+    def test_extract_facts_merges_only_source_supported_skills(self):
+        state: JobParserState = {
+            "source": {
+                "job_url": "https://example.com/jobs/skills",
+                "listing_html": "<p>Tools: JavaScript, Python, Django, React, React-Query, TypeScript, React Native, Git, REST, GraphQL, Claude, Cursor.</p>",
+            },
+            "raw_listing_text": "Tools: JavaScript, Python, Django, React, React-Query, TypeScript, React Native, Git, REST, GraphQL, Claude, Cursor.",
+            "extracted_facts": {},
+            "normalized_packet": {},
+            "confidence": 0.0,
+        }
+
+        with patch(
+            "src.application.parse_job._parse_job_with_openrouter",
+            return_value={
+                "title": "Frontend Engineer",
+                "company": "ExampleCo",
+                "description": "Build frontend systems",
+                "must_have": ["JavaScript", "Go", "AI"],
+                "nice_to_have": ["Go", "AI"],
+            },
+        ):
+            extract_facts(state)
+
+        must_have = state["extracted_facts"]["must_have"]
+        self.assertIn("Python", must_have)
+        self.assertIn("Django", must_have)
+        self.assertIn("React", must_have)
+        self.assertIn("React Query", must_have)
+        self.assertIn("React Native", must_have)
+        self.assertIn("GraphQL", must_have)
+        self.assertIn("Claude", must_have)
+        self.assertIn("Cursor", must_have)
+        self.assertNotIn("Go", must_have)
+        self.assertNotIn("AI", must_have)
+        self.assertNotIn("Go", state["extracted_facts"]["nice_to_have"])
+        self.assertNotIn("AI", state["extracted_facts"]["nice_to_have"])
+
+    def test_heuristic_skill_matching_does_not_match_incidental_substrings(self):
+        state: JobParserState = {
+            "source": {"job_url": "https://example.com/jobs/no-false-positive"},
+            "raw_listing_text": "This role goes beyond implementation and supports daily operations.",
+            "extracted_facts": {},
+            "normalized_packet": {},
+            "confidence": 0.0,
+        }
+
+        with patch("src.application.parse_job._parse_job_with_openrouter", return_value={}):
+            extract_facts(state)
+
+        self.assertNotIn("Go", state["extracted_facts"]["must_have"])
+        self.assertNotIn("AI", state["extracted_facts"]["must_have"])
+        self.assertNotIn("Go", state["extracted_facts"]["nice_to_have"])
+        self.assertNotIn("AI", state["extracted_facts"]["nice_to_have"])
+
+    def test_skill_normalization_requires_explicit_product_names(self):
+        from src.application.parse_job import _source_skill_mentions
+
+        source_text = "Solid understanding of APIs. React-Query is used in the frontend."
+
+        mentions = _source_skill_mentions(source_text)
+
+        self.assertIn("React Query", mentions)
+        self.assertNotIn("SolidJS", mentions)
+        self.assertNotIn("TanStack", mentions)
+
+    def test_source_validation_rejects_ambiguous_and_unlisted_skills(self):
+        from src.application.parse_job import _source_supported_skills
+
+        source_text = "Solid understanding of APIs. React-Query is used in the frontend."
+
+        supported = _source_supported_skills(["Solid", "SolidJS", "TanStack", "React Query", "Less"], source_text)
+
+        self.assertEqual(supported, ["React Query"])
+
     def test_fetch_or_load_listing_handles_url_errors(self):
         state: JobParserState = {
             "source": {"job_url": "https://example.com/jobs/failed", "listing_text": ""},
@@ -160,7 +261,7 @@ class ParseJobTests(unittest.TestCase):
     def test_extract_facts_prefers_openrouter_payload_when_available(self):
         state: JobParserState = {
             "source": {"job_url": "https://example.com/jobs/789"},
-            "raw_listing_text": "Principal Platform Engineer\nNorthwind\nRemote\n",
+            "raw_listing_text": "Principal Platform Engineer\nNorthwind\nRemote\nPython Kubernetes",
             "extracted_facts": {},
             "normalized_packet": {},
             "confidence": 0.0,
