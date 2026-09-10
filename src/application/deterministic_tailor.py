@@ -101,16 +101,6 @@ def _strip_latex_markup(value: str) -> str:
     return text
 
 
-def _extract_latex_items(text: str) -> list[str]:
-    matches = re.findall(r"\\item\s*\{((?:[^{}]|\{[^{}]*\})*)\}", text, flags=re.S)
-    items: list[str] = []
-    for raw in matches:
-        cleaned = _strip_latex_markup(raw)
-        if cleaned:
-            items.append(cleaned)
-    return items
-
-
 def _extract_summary_text(source_summary_tex: str) -> str:
     match = re.search(r"\\begin\{cvparagraph\}(.*?)\\end\{cvparagraph\}", source_summary_tex, flags=re.S)
     if not match:
@@ -552,99 +542,5 @@ def _build_summary_text(
 
 def _render_summary_tex(summary_text: str) -> str:
     return f"\\begin{{cvparagraph}}\n    {_escape_latex(summary_text)}\n\\end{{cvparagraph}}"
-
-
-def _tailor_modules_deterministically(state: ResumeTailorState) -> ResumeTailorState:
-    job_packet = state.get("job_packet", {})
-    source_modules = state.get("source_modules", {})
-    prompts = state.get("prompts", dict(DEFAULT_PROMPTS))
-    allowlist = state.get("allowlist", [])
-    skills_catalog = state.get("skills_catalog", dict(DEFAULT_SKILLS))
-    additional_prompt = prompts.get("additional_prompt", DEFAULT_PROMPTS["additional_prompt"])
-    profile = state.get("layout_profile", {})
-    experience_cvitems_limit = int(profile.get("experience_cvitems_limit", 2))
-    experience_cvsubitems_limit = int(profile.get("experience_cvsubitems_limit", 4))
-    personalprojects_limit = int(profile.get("personalprojects_limit", 2))
-    aboutme_limit = int(profile.get("aboutme_limit", 1))
-    item_word_limit = int(profile.get("item_word_limit", 30))
-    summary_sentences = int(profile.get("summary_sentences", 2))
-    personalprojects_section_prompt = prompts.get(
-        "personalprojects_section_prompt", DEFAULT_PROMPTS["personalprojects_section_prompt"]
-    )
-    personalprojects_priority_order = _extract_personalprojects_priority_order(personalprojects_section_prompt)
-    aboutme_required_items = _parse_prompt_items(
-        prompts.get("aboutme_required_items", DEFAULT_PROMPTS["aboutme_required_items"])
-    )
-
-    keywords = _job_keywords(job_packet)
-    category_skills = _normalize_category_skills(skills_catalog)
-    manual_terms = _parse_additional_prompt_terms(additional_prompt)
-    prioritized_keywords = manual_terms + [keyword for keyword in keywords if keyword.lower() in {item.lower() for item in allowlist}] + [
-        keyword for keyword in keywords if keyword.lower() not in {item.lower() for item in allowlist}
-    ]
-    dedup_keywords: list[str] = []
-    seen: set[str] = set()
-    for keyword in prioritized_keywords:
-        key = keyword.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        dedup_keywords.append(keyword)
-
-    category_boosts = _derive_category_boosts(job_packet, category_skills, dedup_keywords)
-
-    source_experience_text = source_modules.get("experience.tex", "")
-    source_personalprojects_text = source_modules.get("personalprojects.tex", "")
-    source_aboutme_text = source_modules.get("aboutme.tex", "")
-    source_summary_text = _extract_summary_text(source_modules.get("summary.tex", ""))
-
-    tailored_experience = _tailor_experience_module(
-        source_experience_text,
-        dedup_keywords,
-        cvitems_limit=experience_cvitems_limit,
-        cvsubitems_limit=experience_cvsubitems_limit,
-        max_words=item_word_limit,
-        category_skills=category_skills,
-        category_boosts=category_boosts,
-    )
-    tailored_personalprojects = _tailor_personalprojects_module(
-        source_personalprojects_text,
-        dedup_keywords,
-        limit=personalprojects_limit,
-        max_words=max(16, item_word_limit - 4),
-        priority_order=personalprojects_priority_order,
-    )
-
-    tailored_aboutme = _tailor_aboutme_module(
-        source_aboutme_text,
-        dedup_keywords,
-        limit=aboutme_limit,
-        max_words=max(14, item_word_limit - 8),
-        required_items=aboutme_required_items,
-        category_skills=category_skills,
-        category_boosts=category_boosts,
-    )
-    summary_text = _build_summary_text(
-        source_summary_text,
-        source_experience_text,
-        dedup_keywords,
-        job_packet,
-        max_sentences=summary_sentences,
-    )
-
-    state["model_output"] = {
-        "tailored_modules": {
-            "summary.tex": _render_summary_tex(summary_text),
-            "experience.tex": tailored_experience,
-            "personalprojects.tex": tailored_personalprojects,
-            "aboutme.tex": tailored_aboutme,
-        },
-        "recommendations": {
-            "positioning": ["Prioritize bullets showing ownership, reliability, and cross-functional delivery impact."],
-            "project_suggestions": [f"Highlight projects touching {', '.join(dedup_keywords[:3]) if dedup_keywords else 'core software delivery'}"],
-            "gap_analysis": ["Add quantified outcomes (latency, uptime, delivery speed, or cost savings) where possible."],
-        },
-    }
-    return state
 
 

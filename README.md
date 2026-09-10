@@ -207,14 +207,20 @@ To customize personal project order, include it directly inside `personalproject
 
 ## Command Reference
 
-### 1) Build tailored resume outputs
+### 1) Build a job packet
 
-Use `build` for single URL, single file, or URL-list batch workflows. Job names are always derived automatically from the parsed company and title.
+Use `build` for single URL, single file, or URL-list batch workflows. It parses the source and writes `job_packet.json` and `raw_listing_text.txt`; it does not tailor the resume unless `--tailor` is supplied. Job names are always derived automatically from the parsed company and title.
 
 Build from URL:
 
 ```bash
 ./tailor-resume build -u <job_url>
+```
+
+Build and tailor in one step:
+
+```bash
+./tailor-resume build -u <job_url> --tailor
 ```
 
 Example:
@@ -262,7 +268,17 @@ output/<job_name>
 The URL list file should contain one URL per line (blank lines and lines starting with `#` are ignored).
 Job names are generated from parsed company/title (falling back to the URL), de-duplicated with a numeric suffix, and each run writes to its own output folder.
 
-### 2) Rebuild from an existing job_packet.json
+### 2) Tailor from an existing job packet
+
+Use `tailor` after reviewing or editing a job folder. The folder must contain both `job_packet.json` and `raw_listing_text.txt`.
+
+```bash
+./tailor-resume tailor <path_to_job_folder>
+```
+
+This writes `tailored_resume.json`, customized resume and letter text files, and compiled PDF outputs in the target folder.
+
+### 3) Rebuild from an existing job_packet.json
 
 Use this when you manually edit a `job_packet.json` and want regenerated tailored modules, CV letter, and PDFs from that packet.
 

@@ -22,7 +22,6 @@ from src.application.parse_job import (
     JobParserState,
     extract_facts,
     fetch_or_load_listing,
-    handoff_to_tailor,
     normalize_packet,
     validate_packet,
 )
@@ -285,35 +284,6 @@ class ParseJobTests(unittest.TestCase):
 
         self.assertEqual(state["extracted_facts"]["company"], "Northwind")
         self.assertIn("Python", state["extracted_facts"]["must_have"])
-
-    def test_handoff_writes_job_packet_to_output_directory(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            state: JobParserState = {
-                "source": {"job_url": "https://example.com/jobs/456"},
-                "raw_listing_text": "Staff Product Engineer\nAcme\nRemote\n",
-                "extracted_facts": {
-                    "title": "Staff Product Engineer",
-                    "company": "Acme",
-                    "location": "Remote",
-                    "description": "Build products",
-                    "must_have": ["TypeScript"],
-                    "nice_to_have": ["React"],
-                    "responsibilities": ["Ship features"],
-                    "domain": "SaaS",
-                },
-                "normalized_packet": {},
-                "confidence": 0.79,
-            }
-
-            result = handoff_to_tailor(state, output_dir=tmpdir)
-            output_path = Path(tmpdir) / "job" / "job_packet.json"
-            raw_listing_path = Path(tmpdir) / "job" / "raw_listing_text.txt"
-
-            self.assertTrue(output_path.exists())
-            self.assertEqual(raw_listing_path.read_text(encoding="utf-8"), state["raw_listing_text"])
-            payload = json.loads(output_path.read_text())
-            self.assertEqual(payload["job"]["title"], "Staff Product Engineer")
-            self.assertEqual(result["output_path"], str(output_path))
 
     def test_extract_facts_falls_back_when_openrouter_returns_unknown_values(self):
         state: JobParserState = {

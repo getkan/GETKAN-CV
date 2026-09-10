@@ -23,9 +23,3 @@ class JobMetadata(TypedDict, total=False):
     confidence: float
     field_attribution: dict[str, Any]
     validation_errors: list[str]
-
-
-class JobPacket(TypedDict, total=False):
-    job: JobDetails
-    metadata: JobMetadata
-    compatibility_score: int

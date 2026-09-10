@@ -5,7 +5,6 @@ import os
 import re
 import argparse
 import shutil
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,7 +15,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.application.advise import generate_job_hunt_recommendations
-from src.application.tailor_resume import build_tailored_payload, recompile_existing_output, render_env_placeholders
+from src.application.tailor_resume import build_tailored_payload, recompile_existing_output
 from src.infrastructure.environment import load_dotenv
 
 
@@ -57,6 +56,11 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("-l", "--url-list-file", dest="url_list_file")
     build.add_argument("-o", "--output", dest="output_dir")
     build.add_argument("--model", dest="model_name")
+    build.add_argument("-t", "--tailor", action="store_true", help="Tailor the resume after building the job packet")
+    tailor = commands.add_parser("tailor")
+    tailor.add_argument("job_folder", help="Folder containing job_packet.json and raw_listing_text.txt")
+    tailor.add_argument("-o", "--output", dest="output_dir")
+    tailor.add_argument("--model", dest="model_name")
     rebuild = commands.add_parser("rebuild")
     rebuild.add_argument("job_packet_file", nargs="?")
     rebuild.add_argument("--all", action="store_true")
@@ -208,6 +212,23 @@ def _write_job_artifacts(
     job_root = output_root / "job"
     job_root.mkdir(parents=True, exist_ok=True)
 
+    packet_paths = _write_packet_artifacts(output_root, job_packet, raw_listing_text=raw_listing_text)
+    summary_path = job_root / "tailored_resume.json"
+    summary_path.write_text(json.dumps(tailored_payload, indent=2), encoding="utf-8")
+    return {
+        **packet_paths,
+        "summary": summary_path,
+    }
+
+
+def _write_packet_artifacts(
+    output_root: Path,
+    job_packet: dict[str, Any],
+    raw_listing_text: str = "",
+) -> dict[str, Path]:
+    job_root = output_root / "job"
+    job_root.mkdir(parents=True, exist_ok=True)
+
     metadata = job_packet.get("metadata") if isinstance(job_packet.get("metadata"), dict) else {}
     raw_text = raw_listing_text or str(metadata.get("raw_listing_text") or "")
     raw_listing_path = job_root / "raw_listing_text.txt"
@@ -216,12 +237,9 @@ def _write_job_artifacts(
     packet_path = job_root / "job_packet.json"
     packet_path.write_text(json.dumps(job_packet, indent=2), encoding="utf-8")
 
-    summary_path = job_root / "tailored_resume.json"
-    summary_path.write_text(json.dumps(tailored_payload, indent=2), encoding="utf-8")
     return {
         "raw_listing": raw_listing_path,
         "job_packet": packet_path,
-        "summary": summary_path,
     }
 
 
@@ -332,6 +350,38 @@ def _run_single_tailor(
     }
 
 
+def _run_single_build(
+    file_path: Optional[str],
+    job_url: Optional[str],
+    output_dir: Optional[str],
+) -> dict[str, Any]:
+    source_label = job_url or file_path or "source"
+    with StatusSpinner(f"Parsing job listing from {source_label}"):
+        listing_text = load_listing_from_file(file_path)
+        job_packet = parse_job(job_url=job_url, listing_text=listing_text)
+
+    job_name = _auto_job_name(job_packet, job_url or file_path or "", set())
+    output_base = Path(output_dir).parent if output_dir else (Path.cwd() / "output")
+    if _validation_errors(job_packet):
+        return _record_failed_packet(job_packet, job_name, file_path, job_url, output_base, None)
+
+    output_root = Path(output_dir) if output_dir else (output_base / job_name)
+    output_root.mkdir(parents=True, exist_ok=True)
+    compatibility_score = job_packet.get("compatibility_score", 0)
+    success_log_path = append_source_log(job_name, file_path, job_url, compatibility_score)
+    artifact_paths = _write_packet_artifacts(output_root, job_packet, raw_listing_text=listing_text)
+
+    return {
+        "mode": "build",
+        "job_name": job_name,
+        "output_dir": str(output_root),
+        "job_packet": str(artifact_paths["job_packet"]),
+        "raw_listing": str(artifact_paths["raw_listing"]),
+        "compatibility_score": compatibility_score,
+        "success_log": success_log_path,
+    }
+
+
 def _refresh_packet_from_source(packet_payload: dict[str, Any], job_packet_file: str) -> dict[str, Any]:
     metadata = packet_payload.get("metadata") if isinstance(packet_payload.get("metadata"), dict) else {}
     source_url = str(metadata.get("source_url") or "").strip()
@@ -346,6 +396,7 @@ def rebuild_from_job_packet(
     output_dir: Optional[str],
     model_name: Optional[str],
     force: bool = False,
+    raw_listing_text: str = "",
 ) -> dict[str, Any]:
     packet_path = Path(job_packet_file)
     if not packet_path.exists() or not packet_path.is_file():
@@ -423,7 +474,7 @@ def rebuild_from_job_packet(
     with StatusSpinner(f"Tailoring resume modules and compiling PDF for {effective_name}"):
         payload = build_tailored_payload(packet_payload, job_name=effective_name, output_dir=str(output_root), model_name=resolved_tailor_model)
     payload["compatibility_score"] = compatibility_score
-    artifact_paths = _write_job_artifacts(output_root, packet_payload, payload)
+    artifact_paths = _write_job_artifacts(output_root, packet_payload, payload, raw_listing_text=raw_listing_text)
     summary_path = artifact_paths["summary"]
 
     return {
@@ -441,6 +492,34 @@ def rebuild_from_job_packet(
         "forced": bool(force),
         "source_url": source_url or "",
     }
+
+
+def tailor_from_job_folder(
+    job_folder: str,
+    output_dir: Optional[str],
+    model_name: Optional[str],
+) -> dict[str, Any]:
+    input_dir = Path(job_folder)
+    if not input_dir.exists() or not input_dir.is_dir():
+        raise ValueError(f"Tailor input is not a directory: {input_dir}")
+
+    packet_path = input_dir / "job_packet.json"
+    raw_path = input_dir / "raw_listing_text.txt"
+    if not packet_path.is_file():
+        raise FileNotFoundError(f"Job packet file not found: {packet_path}")
+    if not raw_path.is_file():
+        raise FileNotFoundError(f"Raw listing file not found: {raw_path}")
+
+    result = rebuild_from_job_packet(
+        str(packet_path),
+        output_dir or str(input_dir.parent),
+        model_name,
+        raw_listing_text=raw_path.read_text(encoding="utf-8"),
+    )
+    result["mode"] = "tailor"
+    result["job_folder"] = str(input_dir.resolve())
+    result["raw_listing"] = str(raw_path.resolve())
+    return result
 
 
 def rebuild_all_job_packets(output_dir: Optional[str] = None, model_name: Optional[str] = None, force: bool = False) -> dict[str, Any]:
@@ -479,6 +558,7 @@ def run(
     job_hunt_advice: bool = False,
     job_packet_files: list[str] | None = None,
     url_list_file: str | None = None,
+    tailor: bool = False,
 ) -> int:
     if job_hunt_advice:
         advisor_model = _resolve_model_for_role("ADVISOR", model_name)
@@ -527,6 +607,26 @@ def run(
                             output_base,
                             resolved_tailor_model,
                         )
+                    )
+                    continue
+
+                if not tailor:
+                    output_root = output_base / auto_name
+                    output_root.mkdir(parents=True, exist_ok=True)
+                    compatibility_score = job_packet.get("compatibility_score", 0)
+                    success_log_path = append_source_log(auto_name, None, url, compatibility_score)
+                    artifact_paths = _write_packet_artifacts(output_root, job_packet)
+                    batch_results.append(
+                        {
+                            "mode": "build",
+                            "job_name": auto_name,
+                            "url": url,
+                            "output_dir": str(output_root),
+                            "job_packet": str(artifact_paths["job_packet"]),
+                            "raw_listing": str(artifact_paths["raw_listing"]),
+                            "compatibility_score": compatibility_score,
+                            "success_log": success_log_path,
+                        }
                     )
                     continue
 
@@ -599,7 +699,11 @@ def run(
     if not file_path and not job_url:
         raise ValueError("Provide either -f/--file or -u/--url")
 
-    result = _run_single_tailor(file_path, job_url, output_dir, model_name)
+    result = (
+        _run_single_tailor(file_path, job_url, output_dir, model_name)
+        if tailor
+        else _run_single_build(file_path, job_url, output_dir)
+    )
     print(
         json.dumps(result, indent=2)
     )
@@ -634,11 +738,18 @@ def main() -> int:
                 args.job_url,
                 args.output_dir,
                 args.model_name,
-                False,
-                False,
-                None,
-                args.url_list_file,
+                url_list_file=args.url_list_file,
+                tailor=args.tailor,
             )
+
+        if args.command == "tailor":
+            result = tailor_from_job_folder(
+                args.job_folder,
+                args.output_dir,
+                args.model_name,
+            )
+            print(json.dumps(result, indent=2))
+            return 0
 
         if args.command == "rebuild":
             if args.all:

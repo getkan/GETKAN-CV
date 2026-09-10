@@ -63,25 +63,6 @@ def parse_job(*, job_url: str | None = None, listing_text: str = "") -> dict[str
     return state["normalized_packet"]
 
 
-def handoff_to_tailor(state: JobParserState, output_dir: str | Path | None = None) -> dict[str, Any]:
-    if not state.get("normalized_packet"):
-        normalize_packet(state)
-        validate_packet(state)
-        calculate_compatibility_score(state)
-
-    destination = Path(output_dir or "output/tailored/default")
-    job_destination = destination / "job"
-    job_destination.mkdir(parents=True, exist_ok=True)
-    output_path = job_destination / "job_packet.json"
-    output_path.write_text(json.dumps(state["normalized_packet"], indent=2), encoding="utf-8")
-    (job_destination / "raw_listing_text.txt").write_text(state.get("raw_listing_text", ""), encoding="utf-8")
-
-    return {
-        "output_path": str(output_path),
-        "job_packet": state["normalized_packet"],
-    }
-
-
 def calculate_hybrid_compatibility_score(
     job_packet: dict[str, Any],
     model_name: str | None = None,

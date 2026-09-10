@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 from src.application.deterministic_tailor import _score_item, build_allowlist
 from src.application.tailor_resume import build_tailored_payload, tailor_modules
-from src.cli import clean_workspace_artifacts, load_listing_from_file, rebuild_all_job_packets, rebuild_from_job_packet, run
+from src.cli import clean_workspace_artifacts, load_listing_from_file, rebuild_all_job_packets, rebuild_from_job_packet, run, tailor_from_job_folder
 
 
 TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
@@ -210,6 +210,27 @@ class TailorResumeTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             output_dir = Path(tmpdir) / "output" / "acme-senior-engineer"
             self.assertTrue(output_dir.exists())
+            self.assertTrue((output_dir / "job" / "job_packet.json").exists())
+            self.assertTrue((output_dir / "job" / "raw_listing_text.txt").exists())
+
+    def test_run_with_tailor_flag_generates_tailored_outputs(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            listing_path = Path(tmpdir) / "listing.txt"
+            listing_path.write_text("Example listing", encoding="utf-8")
+
+            previous_cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                with patch(
+                    "src.cli.parse_job",
+                    return_value={"job": {"company": "Acme", "title": "Senior Engineer"}},
+                ), patch("src.cli.build_tailored_payload", return_value={"ok": True}):
+                    exit_code = run(str(listing_path), None, None, None, tailor=True)
+            finally:
+                os.chdir(previous_cwd)
+
+            self.assertEqual(exit_code, 0)
+            output_dir = Path(tmpdir) / "output" / "acme-senior-engineer"
             self.assertTrue((output_dir / "job" / "tailored_resume.json").exists())
 
     def test_run_writes_source_history_log(self):
@@ -309,6 +330,7 @@ class TailorResumeTests(unittest.TestCase):
                         None,
                         None,
                         url_list_file=str(list_file),
+                        tailor=True,
                     )
 
                 self.assertEqual(exit_code, 0)
@@ -402,6 +424,41 @@ class TailorResumeTests(unittest.TestCase):
             self.assertEqual([entry["job_name"] for entry in result["rebuilds"]], ["alpha", "beta"])
             self.assertTrue((first_dir / "job" / "tailored_resume.json").exists())
             self.assertTrue((second_dir / "job" / "tailored_resume.json").exists())
+
+    def test_tailor_from_job_folder_uses_files_in_folder(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            job_dir = Path(tmpdir) / "demo-job" / "job"
+            job_dir.mkdir(parents=True, exist_ok=True)
+            packet_path = job_dir / "job_packet.json"
+            packet_path.write_text(
+                json.dumps({"job": {"title": "Senior Engineer", "company": "Acme"}}),
+                encoding="utf-8",
+            )
+            raw_path = job_dir / "raw_listing_text.txt"
+            raw_path.write_text("Senior Engineer at Acme", encoding="utf-8")
+
+            with patch(
+                "src.cli.build_tailored_payload",
+                return_value={"compile": {"pdf_path": ""}},
+            ):
+                result = tailor_from_job_folder(str(job_dir), None, None)
+
+            self.assertEqual(result["mode"], "tailor")
+            self.assertEqual(Path(result["job_folder"]), job_dir.resolve())
+            self.assertEqual(Path(result["raw_listing"]), raw_path.resolve())
+            tailored_raw_path = Path(result["output_dir"]) / "job" / "raw_listing_text.txt"
+            self.assertEqual(tailored_raw_path.read_text(encoding="utf-8"), "Senior Engineer at Acme")
+
+    def test_tailor_from_job_folder_requires_raw_listing_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            job_dir = Path(tmpdir) / "job"
+            job_dir.mkdir()
+            (job_dir / "job_packet.json").write_text(
+                json.dumps({"job": {"title": "Engineer", "company": "Acme"}}), encoding="utf-8"
+            )
+
+            with self.assertRaisesRegex(FileNotFoundError, "Raw listing file not found"):
+                tailor_from_job_folder(str(job_dir), None, None)
 
     def test_clean_workspace_artifacts_removes_output_and_log_contents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
