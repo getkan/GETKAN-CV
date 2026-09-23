@@ -2,7 +2,7 @@
 
 GETKAN-CV is a Python + LaTeX resume and CV-letter tailoring tool.
 
-It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules and a short employer-facing CV letter with truth-preserving edits, and compiles PDF outputs using `xelatex`. For tailored builds, the tool applies progressive one-page layout profiles to fit resume content onto a single page when possible.
+It takes job input (URL, file, or URL list), extracts structured job requirements, tailors resume modules and a short employer-facing CV letter with truth-preserving edits, and compiles PDF outputs using `xelatex`. For tailored runs, the tool applies progressive one-page layout constraints to fit resume content onto a single page when possible.
 
 ## What This Project Does
 
@@ -12,7 +12,7 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 - Uses OpenRouter to generate the tailored module content. `OPENROUTER_API_KEY` is required for tailoring; missing credentials, request failures, or invalid model output stop the run without generating a fallback resume.
 - Writes generated artifacts to a dedicated output folder.
 - Compiles LaTeX PDFs using `xelatex`.
-- Supports rebuilding tailored outputs directly from a manually edited `job_packet.json`, or forcing a fresh parse from the packet's source URL.
+- Supports tailoring directly from a reviewed or manually edited job folder containing `job_packet.json` and `raw_listing_text.txt`.
 - Emits one plain stderr progress line per long-running action while keeping stdout reserved for JSON results.
 
 ## Project Structure
@@ -21,9 +21,10 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 
 #### `src/cli.py` & `src/main.py`
 
-- Main entrypoint and command dispatch.
+- `src/cli.py` defines the command surface and dispatches workflows.
+- `src/main.py` is the backward-compatible Python launcher.
 - Resolves models per role from environment or CLI.
-- Manages workflow orchestration across all commands.
+- Manages workflow orchestration across parse, tailor, and advice commands.
 
 #### `src/application/`
 
@@ -39,7 +40,6 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 **Typed contracts and data structures**
 
 - `job_packet.py`: Normalized job metadata, requirements, and metadata.
-- `resume_profile.py`: One-page layout profile contract (sentence/item limits, word limits).
 
 #### `src/infrastructure/`
 
@@ -47,7 +47,6 @@ It takes job input (URL, file, or URL list), extracts structured job requirement
 
 - `openrouter.py`: OpenRouter JSON-schema transport and request/response handling.
 - `latex.py`: XeLaTeX rendering, PDF page counting, and log inspection.
-- `artifacts.py`: JSON serialization and file I/O helpers.
 - `prompt_config.py`: Named prompt-configuration loader with safe defaults.
 - `prompts.json`: Editable prompt groups for parsing, tailoring, and advice generation.
 
@@ -201,65 +200,65 @@ Common keys:
 - `aboutme_section_prompt`
 - `aboutme_required_items` (delimiter: `||`)
 
-To customize personal project order, include it directly inside `personalprojects_section_prompt`:
+To customize personal project order, include it directly inside `personalprojects_section_prompt` in `src/infrastructure/prompts.json`:
 
 `Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus`
 
 ## Command Reference
 
-### 1) Build a job packet
+### 1) Parse a job listing
 
-Use `build` for single URL, single file, or URL-list batch workflows. It parses the source and writes `job_packet.json` and `raw_listing_text.txt`; it does not tailor the resume unless `--tailor` is supplied. Job names are always derived automatically from the parsed company and title.
+Use `parse` for single URL, single file, or URL-list batch workflows. It parses the source and writes `job_packet.json` and `raw_listing_text.txt`; it does not tailor the resume unless `--tailor` is supplied. Job names are always derived automatically from the parsed company and title.
 
 Build from URL:
 
 ```bash
-./tailor-resume build -u <job_url>
+./tailor-resume parse -u <job_url>
 ```
 
 Build and tailor in one step:
 
 ```bash
-./tailor-resume build -u <job_url> --tailor
+./tailor-resume parse -u <job_url> --tailor
 ```
 
 Example:
 
 ```bash
-./tailor-resume build -u "https://www.github.careers/careers-home/jobs/5682?lang=en-us"
+./tailor-resume parse -u "https://www.github.careers/careers-home/jobs/5682?lang=en-us"
 ```
 
 Build from local listing file:
 
 ```bash
-./tailor-resume build -f <path_to_listing_text_or_html>
+./tailor-resume parse -f <path_to_listing_text_or_html>
 ```
 
-Batch build from URL list file:
+Parse a batch from a URL list file:
 
 ```bash
-./tailor-resume build -l <path_to_url_list_file>
+./tailor-resume parse -l <path_to_url_list_file>
 ```
 
 Optional custom output root for batch runs:
 
 ```bash
-./tailor-resume build -l <path_to_url_list_file> -o <output_dir>
+./tailor-resume parse -l <path_to_url_list_file> -o <output_dir>
 ```
 
 Set custom output directory for a single run:
 
 ```bash
-./tailor-resume build -u <job_url> -o <output_dir>
+./tailor-resume parse -u <job_url> -o <output_dir>
 ```
 
 Override model (optional):
 
 ```bash
-./tailor-resume build -u <job_url> --model <model_id>
+./tailor-resume parse -u <job_url> --model <model_id>
 ```
 
-If `-o` is omitted for single-run build, default output is:
+If `-o` is omitted for a single-run parse, default output is:
 
 ```text
 output/<job_name>
@@ -278,54 +277,7 @@ Use `tailor` after reviewing or editing a job folder. The folder must contain bo
 
 This writes `tailored_resume.json`, customized resume and letter text files, and compiled PDF outputs in the target folder.
 
-### 3) Rebuild from an existing job_packet.json
-
-Use this when you manually edit a `job_packet.json` and want regenerated tailored modules, CV letter, and PDFs from that packet.
-
-```bash
-./tailor-resume rebuild <path_to_job_packet_json>
-```
-
-Optional output directory (the job name is taken from the packet's folder name):
-
-```bash
-./tailor-resume rebuild <path_to_job_packet_json> -o <output_dir>
-```
-
-Optional model override:
-
-```bash
-./tailor-resume rebuild <path_to_job_packet_json> --model <model_id>
-```
-
-Rebuild all saved packets under the output tree:
-
-```bash
-./tailor-resume rebuild --all
-```
-
-Optional custom output root for batch rebuild:
-
-```bash
-./tailor-resume rebuild --all -o <output_dir>
-```
-
-Force a fresh parse from the packet's `metadata.source_url`:
-
-```bash
-./tailor-resume rebuild <path_to_job_packet_json> -f
-./tailor-resume rebuild --all --force
-```
-
-This mode:
-
-- Skips URL/file parsing.
-- Rebuilds tailored resume and CV-letter output from the supplied packet.
-- Writes/updates `job_packet.json`, `tailored_resume.json`, and compiled PDF outputs in the target folder.
-- `--all` scans the output tree for `job_packet.json` files and rebuilds each one.
-- `-f/--force` re-fetches and re-parses the listing from `metadata.source_url` and replaces the existing packet contents. It fails when the packet has no `metadata.source_url`.
-
-### 4) Generate job hunt recommendations from saved packets
+### 3) Generate job hunt recommendations from saved packets
 
 ```bash
 ./tailor-resume advice
@@ -409,7 +361,7 @@ python -m unittest -q tests.test_prompt_config
 
 ## Generated Output Layout
 
-For a run like `./tailor-resume build -u <job_url>`:
+For a run like `./tailor-resume parse -u <job_url>`:
 
 - `output/github-careers/job_packet.json`: Parsed and normalized job data.
 - `output/github-careers/tailored_resume.json`: Tailoring payload + compile metadata.
@@ -429,8 +381,7 @@ When a parse produces validation errors, no tailored output is generated:
 - The source URL (or file path) is appended to `output/failed/failed.txt`.
 - The run is logged to `log/failed_history.jsonl` only, never to `log/success_history.jsonl`.
 - The tailor and PDF compile steps are skipped, and the CLI result reports `"mode": "failed"`.
-- A `rebuild` of a packet that fails validation removes its regenerable output folder and moves the packet to `output/failed/`.
-- `rebuild --all` and `advice` skip everything under `output/failed/`.
+- `advice` skips everything under `output/failed/`.
 
 For each tailored run, a `compatibility_score` (1-10) is computed and:
 
@@ -441,12 +392,11 @@ For each tailored run, a `compatibility_score` (1-10) is computed and:
 
 ## Typical Workflow
 
-1. Run `build` from URL/file or URL-list.
+1. Run `parse` from URL/file or URL-list.
 2. Inspect generated modules in `output/<job_name>/resume/modules`.
 3. Optionally edit `job_packet.json` or generated module files.
 4. Optionally inspect or edit the generated CV letter at `output/<job_name>/resume/letter.tex`.
-5. Run `rebuild` with the packet path to regenerate outputs.
-6. Run `rebuild -f` to discard packet edits and re-parse the original listing URL.
+5. Run `tailor` with the job folder to regenerate outputs.
 
 ## Architecture & Data Flow
 

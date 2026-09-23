@@ -781,17 +781,23 @@ def _heuristic_fallback(text: str) -> dict[str, Any]:
         posting = job_postings[0]
         title = (posting.get("title") or "").strip() or title
         organization = posting.get("hiringOrganization") or {}
-        company = (organization.get("name") or posting.get("company") or "").strip()
+        if isinstance(organization, dict):
+            company = str(organization.get("name") or posting.get("company") or "").strip()
+        else:
+            company = str(organization or posting.get("company") or "").strip()
         location_payload = posting.get("jobLocation") or posting.get("jobLocationType") or ""
         if isinstance(location_payload, dict):
             address = location_payload.get("address") or {}
-            location_tuple = (
-                address.get("addressCountry")
-                or address.get("addressLocality")
-                or address.get("addressRegion")
-                or location_payload.get("name")
-                or ""
-            )
+            if isinstance(address, dict):
+                location_tuple = (
+                    address.get("addressCountry")
+                    or address.get("addressLocality")
+                    or address.get("addressRegion")
+                    or location_payload.get("name")
+                    or ""
+                )
+            else:
+                location_tuple = address or location_payload.get("name") or ""
             location = _clean_unknown(str(location_tuple))
         elif isinstance(location_payload, str):
             location = _clean_unknown(location_payload)

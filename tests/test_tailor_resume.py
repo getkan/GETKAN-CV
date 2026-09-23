@@ -7,7 +7,7 @@ Validates the tailoring phase of the resume tailoring workflow:
 - Allowlist filtering and skill-based prioritization
 - LaTeX compilation to PDF with xelatex
 - Artifact generation and output organization
-- Integration with the CLI and rebuild workflows
+- Integration with the CLI and tailor workflow
 """
 import json
 import os
@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 from src.application.deterministic_tailor import _score_item, build_allowlist
 from src.application.tailor_resume import build_tailored_payload, tailor_modules
-from src.cli import clean_workspace_artifacts, load_listing_from_file, rebuild_all_job_packets, rebuild_from_job_packet, run, tailor_from_job_folder
+from src.cli import clean_workspace_artifacts, load_listing_from_file, run, tailor_from_job_folder
 
 
 TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
@@ -184,8 +184,8 @@ class TailorResumeTests(unittest.TestCase):
             self.assertTrue(Path(tmpdir, "resume", "letter.tex").exists())
             self.assertIn("Senior Engineer role", Path(tmpdir, "resume", "letter.tex").read_text(encoding="utf-8"))
             if shutil.which("xelatex"):
-                self.assertTrue(Path(tmpdir, "demo-job.pdf").exists())
-                self.assertTrue(Path(tmpdir, "demo-job-cv.pdf").exists())
+                self.assertTrue(Path(payload["compile"]["pdf_path"]).exists())
+                self.assertTrue(Path(payload["compile"]["cv_pdf_path"]).exists())
             else:
                 self.assertEqual(payload["compile"]["pdf_path"], "")
                 self.assertEqual(payload["compile"]["cv_pdf_path"], "")
@@ -362,68 +362,6 @@ class TailorResumeTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             recompile_mock.assert_called_once()
             parse_job_mock.assert_not_called()
-
-    def test_rebuild_from_job_packet_generates_outputs(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            packet_dir = Path(tmpdir) / "demo-job" / "job"
-            packet_dir.mkdir(parents=True, exist_ok=True)
-            packet_path = packet_dir / "job_packet.json"
-            packet_path.write_text(
-                json.dumps(
-                    {
-                        "job": {
-                            "title": "Senior Frontend Engineer",
-                            "company": "Acme",
-                            "must_have": ["React", "TypeScript"],
-                            "nice_to_have": ["Playwright"],
-                            "domain": "SaaS",
-                        }
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            previous_cwd = os.getcwd()
-            os.chdir(tmpdir)
-            try:
-                with patch(
-                    "src.cli.build_tailored_payload",
-                    return_value={"compile": {"pdf_path": str(Path(tmpdir) / "output" / "demo-job" / "demo-job.pdf")}},
-                ):
-                    result = rebuild_from_job_packet(str(packet_path), None, "gpt-4o-mini")
-            finally:
-                os.chdir(previous_cwd)
-
-            self.assertEqual(result.get("mode"), "rebuild")
-            self.assertEqual(result.get("job_name"), "demo-job")
-            self.assertTrue(Path(result["output_dir"]).exists())
-            self.assertTrue(Path(result["job_packet"]).exists())
-            self.assertTrue(Path(result["summary"]).exists())
-            self.assertEqual(result.get("model_name"), "gpt-4o-mini")
-
-    def test_rebuild_all_job_packets_rebuilds_every_packet_in_output_root(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_root = Path(tmpdir) / "output"
-            first_dir = output_root / "alpha"
-            second_dir = output_root / "beta"
-            first_dir.mkdir(parents=True, exist_ok=True)
-            second_dir.mkdir(parents=True, exist_ok=True)
-            (first_dir / "job_packet.json").write_text(
-                json.dumps({"job": {"title": "Alpha Role", "company": "Acme", "must_have": ["Python"], "nice_to_have": ["Docker"]}}),
-                encoding="utf-8",
-            )
-            (second_dir / "job_packet.json").write_text(
-                json.dumps({"job": {"title": "Beta Role", "company": "Globex", "must_have": ["Kubernetes"], "nice_to_have": ["Go"]}}),
-                encoding="utf-8",
-            )
-
-            with patch("src.cli.build_tailored_payload", return_value={"compile": {"pdf_path": ""}}):
-                result = rebuild_all_job_packets(str(output_root), None)
-
-            self.assertEqual(result["packet_count"], 2)
-            self.assertEqual([entry["job_name"] for entry in result["rebuilds"]], ["alpha", "beta"])
-            self.assertTrue((first_dir / "job" / "tailored_resume.json").exists())
-            self.assertTrue((second_dir / "job" / "tailored_resume.json").exists())
 
     def test_tailor_from_job_folder_uses_files_in_folder(self):
         with tempfile.TemporaryDirectory() as tmpdir:

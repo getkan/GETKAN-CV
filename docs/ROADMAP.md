@@ -23,7 +23,7 @@ A job listing from a URL or local file is parsed into a normalized, validated
 
 ### Exit criteria
 
-- `./tailor-resume build -u <url>` writes a valid packet.
+- `./tailor-resume parse -u <url>` writes a valid packet.
 
 ### Validation
 
@@ -41,7 +41,9 @@ Tailored resume modules, a tailored CV letter, and compiled PDFs per job, with p
 - Module tailoring with deterministic rewriting in `src/application/deterministic_tailor.py`.
 - CV-letter tailoring from `resume/letter.tex` using the same LaTeX styling.
 - One-page fit profiles and progressive constraint application in `src/application/tailor_resume.py`.
-- `build` and batch URL-list builds.
+- Structure-preserving tailoring prompts for resume modules and CV letters in
+  `src/infrastructure/prompts.json`.
+- `parse` and batch URL-list parsing.
 - Artifact layout under `output/<job_name>/`.
 - XeLaTeX integration with workspace and local latexmk configuration.
 
@@ -52,40 +54,35 @@ Tailored resume modules, a tailored CV letter, and compiled PDFs per job, with p
 
 ### Exit criteria
 
-- Tailored `.tex` modules, tailored `letter.tex`, and published resume/CV PDFs are produced for a build run.
+- Tailored `.tex` modules, tailored `letter.tex`, and published resume/CV PDFs are produced for a `parse --tailor` run.
 
 ### Validation
 
 - Test suite plus manual review of the generated PDFs.
 
 
-## Phase 3: Rebuild and advice workflows (completed)
+## Phase 3: Tailor and advice workflows (completed)
 
 ### Outcome
 
-Saved packets can be regenerated or re-parsed, and analyzed across jobs.
+Saved job folders can be tailored again and analyzed across jobs.
 
 ### Included work
 
-- `rebuild`, `rebuild --all`, and `rebuild -f/--force` re-parse from
-  `metadata.source_url`.
+- `tailor` regenerates output from a saved job folder.
 - Automatic job naming for every command; explicit job-name arguments removed.
 - `advice` recommendation sections in `src/application/advise.py`.
 - `--clean` workspace reset.
 
 ### Dependencies and risks
 
-- Forced rebuild depends on the source URL still being reachable; it
-  overwrites manual packet edits by design.
-
 ### Exit criteria
 
-- `./tailor-resume rebuild --all -f` completes and refreshes each packet.
+- `./tailor-resume tailor <job_folder>` completes from saved packet inputs.
 
 ### Validation
 
-- Test suite, `rebuild --help` surface check, and a real `rebuild --all -f`
-  run.
+- Test suite and `tailor --help` surface check.
 
 ## Phase 4: Failed-parse isolation (completed)
 
@@ -100,11 +97,11 @@ separately.
   source recorded in `output/failed/failed.txt`.
 - Split history logs: `log/success_history.jsonl` and
   `log/failed_history.jsonl`.
-- `rebuild --all` and the advisor skip `output/failed/`.
+- The advisor skips `output/failed/`.
 
 ### Dependencies and risks
 
-- A failed `rebuild` deletes the regenerable output folder for that packet.
+- A failed parse leaves only the failed packet and failure log.
 
 ### Exit criteria
 

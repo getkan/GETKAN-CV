@@ -52,6 +52,10 @@ DEFAULT_PROMPTS: dict[str, str] = {
         "Customize the supplied letter.tex as a short employer-facing letter of introduction for the target role. "
         "Keep the existing LaTeX styling, header, footer, letter metadata commands, cvletter environment, and closing structure. "
         "Tailor the paragraphs toward the company, role, domain, and strongest relevant evidence from the resume modules. "
+        "Use experience.tex only as evidence for the text inside the <experience>...</experience> block, and use personalprojects.tex only as evidence for the text inside the <personalprojects>...</personalprojects> block. "
+        "Rewrite those two blocks as concise, natural letter prose: select the most relevant achievements and projects, synthesize them rather than copying bullet lists, and avoid repeating the same evidence. "
+        "Do not move experience evidence into the projects block or project evidence into the experience block. "
+        "Treat the tags as editing markers and remove the literal tags from the final letter. Preserve the opening and closing paragraphs unless a small change is needed for coherence. "
         "Do not invent facts, metrics, dates, technologies, credentials, or personal details. Return a complete compilable letter.tex document."
     ),
 }
@@ -299,6 +303,7 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
                 "compile_log": "\n".join(logs),
                 "summary": "Tailoring completed, CV PDF compile failed",
                 "pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
+                "resume_pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
                 "cv_pdf_path": "",
             }
         cv_pdf_path = str(published_letter_pdf if published_letter_pdf.exists() else "")
@@ -306,6 +311,7 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
     return {
         "compile_log": "\n".join(logs),
         "summary": "Tailoring completed and PDFs compiled",
+        "pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
         "resume_pdf_path": str(published_resume_pdf if published_resume_pdf.exists() else ""),
         "cv_pdf_path": cv_pdf_path,
     }
@@ -354,7 +360,7 @@ def recompile_existing_output(output_dir: str | Path) -> dict[str, Any]:
     }
 
     compile_result = compile_and_summarize({}, artifacts)
-    page_count = _pdf_page_count(compile_result.get("pdf_path", ""))
+    page_count = _pdf_page_count(compile_result.get("pdf_path") or compile_result.get("resume_pdf_path", ""))
     if page_count is not None:
         compile_result["page_count"] = page_count
 
@@ -423,7 +429,7 @@ def build_tailored_payload(job_packet: dict[str, Any], job_name: str, output_dir
         validate_output(state)
         artifacts = write_artifacts(state, output_dir, job_name=job_name)
         compile_result = compile_and_summarize(state, artifacts)
-        selected_page_count = _pdf_page_count(compile_result.get("pdf_path", ""))
+        selected_page_count = _pdf_page_count(compile_result.get("pdf_path") or compile_result.get("resume_pdf_path", ""))
         if selected_page_count is not None and selected_page_count <= 1:
             break
 

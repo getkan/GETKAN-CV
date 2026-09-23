@@ -16,16 +16,14 @@ base resume in `resume/` and reviews generated output before sending it.
 
 ## Required behavior
 
-- `build` accepts a job URL (`-u`), a local listing file (`-f`), or a URL list
-  file (`-l`) and writes tailored artifacts per job.
+- `parse` accepts a job URL (`-u`), a local listing file (`-f`), or a URL list
+  file (`-l`) and writes a job packet and raw listing text per job.
+- `parse --tailor` parses and tailors in one step.
 - Job names are never supplied by the user. They are derived from the parsed
   company and title, fall back to the source URL or file, are slugified, and
   are de-duplicated with a numeric suffix within a batch run.
-- `rebuild` takes its job name from the packet's containing folder.
-- `rebuild` regenerates tailored output from an existing `job_packet.json`,
-  either for one packet or for every packet under the output tree (`--all`).
-- `rebuild -f/--force` re-fetches and re-parses the listing from the packet's
-  `metadata.source_url` and replaces the packet contents.
+- `tailor` takes a job folder containing `job_packet.json` and
+  `raw_listing_text.txt` and regenerates tailored output.
 - `advice` aggregates saved job packets into job hunt recommendations.
 - `--clean` clears generated `output/` and `log/` contents.
 - Missing input (no URL, no file, absent packet, packet without
@@ -40,20 +38,20 @@ base resume in `resume/` and reviews generated output before sending it.
   `output/failed/<job_name>/job_packet.json`, the source is appended to
   `output/failed/failed.txt`, and the run is logged only to
   `log/failed_history.jsonl`.
-- `rebuild --all` and `advice` ignore packets under `output/failed/`.
+- `advice` ignores packets under `output/failed/`.
 
 ## User experience
 
-The only interface is the `./tailor-resume` CLI. Primary workflow: build from a
-URL, inspect the generated modules and packet under the auto-named output
-folder, optionally edit them, then `rebuild` (or `rebuild -f` to discard packet
-edits and re-parse the listing). Prompts and tailoring controls are
-user-editable JSON files under `src/*/`.
+The only interface is the `./tailor-resume` CLI. Primary workflow: parse from a
+URL, inspect the generated packet and raw listing under the auto-named output
+folder, optionally edit them, then `tailor` that job folder. Prompt groups are
+user-editable in `src/infrastructure/prompts.json`.
 
 ## Architecture and data flow
 
 - `src/cli.py` defines the argument surface and dispatches commands.
-- `src/main.py` is the entrypoint; orchestrates each command and resolves models per role.
+- `src/main.py` is the backward-compatible Python launcher; `src/cli.py` defines the
+  command surface, orchestration, and model resolution.
 - **Parsing phase** (`src/application/parse_job.py`):
   - Fetches or loads the listing from a URL or file.
   - Extracts facts: title, company, location, must-haves, nice-to-haves, responsibilities.
@@ -61,7 +59,7 @@ user-editable JSON files under `src/*/`.
   - Computes a compatibility score (1–10) by comparing job requirements against resume content.
   - Writes the normalized packet to `job_packet.json`.
 - **Tailoring phase** (`src/application/tailor_resume.py` + `src/application/deterministic_tailor.py`):
-  - Loads the job packet and applies one-page layout profiles progressively.
+  - Loads the job packet and applies one-page layout constraints progressively.
   - For each profile, requests tailored `summary`, `experience`, `personalprojects`, and `aboutme` modules plus a tailored `letter.tex` using the configured OpenRouter tailoring prompt.
   - Writes tailored modules to `output/<job_name>/resume/modules/`.
   - Writes the tailored CV letter to `output/<job_name>/resume/letter.tex`.
@@ -71,8 +69,9 @@ user-editable JSON files under `src/*/`.
   - Reads saved job packets and aggregates job hunt recommendations.
   - Compares market demand across packets against the base resume and skills catalog.
 - **Supporting layers**:
-  - `src/domain/` defines contracts: `job_packet.py` (job metadata), `resume_profile.py` (layout constraints).
-  - `src/infrastructure/` provides adapters: `openrouter.py` (model API), `latex.py` (XeLaTeX integration), `artifacts.py` (I/O), `prompt_config.py` (prompt management).
+  - `src/domain/` defines the persisted job packet contract in `job_packet.py`.
+  - `src/infrastructure/` provides adapters: `openrouter.py` (model API), `latex.py`
+    (XeLaTeX integration), and `prompt_config.py` (prompt management).
 - **State management**: File-based; `output/<job_name>/job_packet.json`, `tailored_resume.json`, tailored TeX files, compiled resume/CV PDFs, failed packets under `output/failed/`, and logs in `log/success_history.jsonl` + `log/failed_history.jsonl`.
 - **External services**: OpenRouter for LLM calls, HTTP fetch for listing URLs.
 

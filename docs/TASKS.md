@@ -11,17 +11,16 @@ No pending tasks. Add a task here when new work is scoped in
   - Validation: `python -m unittest tests.test_parse_job`.
 - [x] Tailoring and PDF compilation (Roadmap Phase 2).
   - Validation: test suite plus manual PDF review.
-- [x] Rebuild and advice workflows (Roadmap Phase 3).
-  - Validation: test suite, `./tailor-resume rebuild --help`, and a
-    `./tailor-resume rebuild --all -f` run.
+- [x] Tailor and advice workflows (Roadmap Phase 3).
+  - Validation: test suite and `./tailor-resume tailor --help`.
 - [x] Automatic job naming for all commands.
-  - Validation: full unittest run and `./tailor-resume build --help` / `./tailor-resume rebuild --help`.
+  - Validation: full unittest run and `./tailor-resume parse --help` / `./tailor-resume tailor --help`.
 - [x] Failed-parse isolation (Roadmap Phase 4).
   - Validation: `python -m unittest tests.test_parse_job tests.test_tailor_resume tests.test_advise tests.test_prompt_config` (full test suite).
 - [x] Refactored codebase structure.
   - Consolidated `src/parser/`, `src/tailor/`, and `src/advisor/` into `src/application/`.
   - Added `src/domain/` for typed contracts.
-  - Added `src/infrastructure/` for external integrations (`openrouter.py`, `latex.py`, `artifacts.py`, `prompt_config.py`).
+  - Added `src/infrastructure/` for external integrations (`openrouter.py`, `latex.py`, `prompt_config.py`).
   - Standardized OpenRouter JSON schema calls across application modules to use `src/infrastructure/openrouter.py`.
   - Reorganized `parse_job.py` and `advise.py` into clear logical sections with PEP 8 top-level imports.
   - Rewrote and updated unit test suite (35 passing tests) matching new module structure and deleted legacy test files (`test_parser_agent.py`, `test_tailor_agent.py`, `test_advisor_agent.py`).
@@ -33,8 +32,10 @@ No pending tasks. Add a task here when new work is scoped in
   - Replaced animated spinner output with one stderr line per action so stdout remains clean JSON.
 - [x] Tailored CV letter output.
   - Added `resume/letter.tex` tailoring and published `<job_name>-cv.pdf` outputs alongside resume PDFs.
-- [] More dynamic resume modules, allowing for easier addition and removal of sections without modifying core logic.
-- [] Extract skills from hardcoded lists into a configurable source (e.g., JSON or database).
+## Deferred ideas
+
+- More dynamic resume modules, allowing sections to be added or removed without modifying core logic.
+- Extract remaining skills from hardcoded lists into a configurable source.
 
 ## Known issues
 
