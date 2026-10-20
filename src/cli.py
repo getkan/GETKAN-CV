@@ -15,7 +15,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.application.advise import generate_job_hunt_recommendations
-from src.application.tailor_resume import build_tailored_payload, recompile_existing_output
+from src.application.tailor_resume import build_generic_payload, build_tailored_payload, recompile_existing_output
 from src.infrastructure.environment import load_dotenv
 
 
@@ -58,7 +58,8 @@ def build_parser() -> argparse.ArgumentParser:
     parse.add_argument("--model", dest="model_name")
     parse.add_argument("-t", "--tailor", action="store_true", help="Tailor the resume after parsing the job packet")
     tailor = commands.add_parser("tailor")
-    tailor.add_argument("job_folder", help="Folder containing job_packet.json and raw_listing_text.txt")
+    tailor.add_argument("job_folder", nargs="?", help="Folder containing job_packet.json and raw_listing_text.txt")
+    tailor.add_argument("--generic", action="store_true", help="Generate a generic one-page resume without job-specific configuration")
     tailor.add_argument("-o", "--output", dest="output_dir")
     tailor.add_argument("--model", dest="model_name")
     advice = commands.add_parser("advice")
@@ -511,6 +512,27 @@ def tailor_from_job_folder(
     return result
 
 
+def generate_generic_resume(
+    output_dir: Optional[str] = None,
+    model_name: Optional[str] = None,
+) -> dict[str, Any]:
+    output_root = Path(output_dir) if output_dir else (Path.cwd() / "output" / "generic")
+    output_root.mkdir(parents=True, exist_ok=True)
+    _require_resume_source(modules_only=True)
+    resolved_model = _resolve_model_for_role("TAILOR", model_name)
+    with StatusSpinner("Generating generic one-page resume"):
+        payload = build_generic_payload(output_root, model_name=resolved_model)
+    return {
+        "mode": "generic",
+        "job_name": "generic",
+        "output_dir": str(output_root),
+        "pdf": payload.get("compile", {}).get("pdf_path", ""),
+        "summary": payload.get("compile", {}).get("summary", ""),
+        "page_count": payload.get("compile", {}).get("page_count"),
+        "model_name": resolved_model or "",
+    }
+
+
 def run(
     file_path: Optional[str],
     job_url: Optional[str],
@@ -705,6 +727,14 @@ def main() -> int:
             )
 
         if args.command == "tailor":
+            if args.generic:
+                if args.job_folder:
+                    raise ValueError("Do not provide a job folder with --generic")
+                result = generate_generic_resume(args.output_dir, args.model_name)
+                print(json.dumps(result, indent=2))
+                return 0
+            if not args.job_folder:
+                raise ValueError("Provide a job folder or use --generic")
             result = tailor_from_job_folder(
                 args.job_folder,
                 args.output_dir,

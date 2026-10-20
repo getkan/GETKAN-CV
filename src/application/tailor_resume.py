@@ -22,10 +22,31 @@ class ResumeTailorState(TypedDict, total=False):
     compile_log: str
     layout_profile: dict[str, int]
     model_name: str
+    generic: bool
 
 
 PROMPT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "infrastructure" / "prompts.json"
 DEFAULT_PROMPTS: dict[str, str] = {
+    "generic_resume_system_prompt": (
+        "You are an expert resume editor. Use only facts in the supplied resume modules and "
+        "preserve their section structure. Never invent or infer achievements, skills, "
+        "responsibilities, metrics, dates, titles, certifications, technologies, or personal details."
+    ),
+    "generic_resume_user_prompt": (
+        "Create a clear, general-purpose resume that is not targeted to any employer or job. "
+        "Use the available page space effectively: include the strongest relevant experience "
+        "and projects, with enough specific detail to make the resume content-rich and fill the "
+        "page without overflowing. Do not over-compress bullets or omit useful source material "
+        "just to make the resume shorter. In the ReviewPush experience, preserve separate "
+        "'Frontend Development' and 'Backend Development' lead-ins, each with its own relevant "
+        "sub-bullets. Never combine them under a 'Full-Stack Development' heading. Keep each "
+        "achievement in its original frontend or backend group, and do not move experience "
+        "bullets into another section. Preserve the candidate's experience and qualifications, "
+        "apply the supplied layout profile, and maintain factual accuracy. Return only the "
+        "requested resume modules.\n\n"
+        "One-page layout profile:\n{layout_profile}"
+        "\n\nSource TeX modules:\n{source_modules}"
+    ),
     "resume_customizer_system_prompt": (
         "You are an expert resume customizer. You will receive job information and existing "
         "resume files. Customize the resume to better match the target role while preserving "
@@ -68,11 +89,12 @@ def _load_prompt_config() -> dict[str, str]:
     return load_prompt_config(PROMPT_CONFIG_PATH, DEFAULT_PROMPTS, section="tailor")
 
 
-def load_context(state: ResumeTailorState) -> ResumeTailorState:
+def load_context(state: ResumeTailorState, load_prompts: bool = True) -> ResumeTailorState:
     repo_root = Path(__file__).resolve().parents[2]
     modules_root = repo_root / "resume" / "modules"
+    letter_path = repo_root / "resume" / "letter.tex"
     missing = [name for name in ("summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex") if not (modules_root / name).exists()]
-    if missing or not (repo_root / "resume" / "letter.tex").exists():
+    if missing or (not state.get("generic", False) and not letter_path.exists()):
         raise FileNotFoundError(
             f"Base resume source is incomplete under {repo_root / 'resume'}. "
             "Copy resume.example/ to resume/ and fill in your details before tailoring."
@@ -83,8 +105,8 @@ def load_context(state: ResumeTailorState) -> ResumeTailorState:
         "personalprojects.tex": (modules_root / "personalprojects.tex").read_text(encoding="utf-8"),
         "aboutme.tex": (modules_root / "aboutme.tex").read_text(encoding="utf-8"),
     }
-    state["source_letter_tex"] = (repo_root / "resume" / "letter.tex").read_text(encoding="utf-8")
-    state["prompts"] = _load_prompt_config()
+    state["source_letter_tex"] = letter_path.read_text(encoding="utf-8") if letter_path.exists() else ""
+    state["prompts"] = _load_prompt_config() if load_prompts else {}
     return state
 
 
@@ -109,43 +131,61 @@ def _tailor_modules_with_openrouter(state: ResumeTailorState) -> ResumeTailorSta
     source_modules = state["source_modules"]
     profile = state.get("layout_profile", {})
     module_names = ("summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex")
-    user_prompt = prompts["resume_customizer_user_prompt_template"].format(
-        job_packet=json.dumps(state["job_packet"], indent=2),
-    )
-    section_prompts = {
-        "summary.tex": prompts.get("summary_section_prompt", ""),
-        "experience.tex": prompts.get("experience_section_prompt", ""),
-        "personalprojects.tex": prompts.get("personalprojects_section_prompt", ""),
-        "aboutme.tex": prompts.get("aboutme_section_prompt", ""),
+    generic = state.get("generic", False)
+    if generic:
+        system_prompt = prompts["generic_resume_system_prompt"]
+        user_prompt = prompts["generic_resume_user_prompt"].format(
+            layout_profile=json.dumps(profile),
+            source_modules=json.dumps(
+                {name: source_modules.get(name, "") for name in module_names},
+                indent=2,
+            ),
+        )
+        required_fields = ["tailored_modules"]
+    else:
+        system_prompt = prompts["resume_customizer_system_prompt"]
+        user_prompt = prompts["resume_customizer_user_prompt_template"].format(
+            job_packet=json.dumps(state["job_packet"], indent=2),
+        )
+        section_prompts = {
+            "summary.tex": prompts.get("summary_section_prompt", ""),
+            "experience.tex": prompts.get("experience_section_prompt", ""),
+            "personalprojects.tex": prompts.get("personalprojects_section_prompt", ""),
+            "aboutme.tex": prompts.get("aboutme_section_prompt", ""),
+        }
+        user_prompt += "\n\nSection instructions:\n" + "\n".join(
+            f"{name}: {instruction}" for name, instruction in section_prompts.items()
+        )
+        user_prompt += "\nletter.tex: " + prompts.get("letter_prompt", "")
+        user_prompt += "\n\nOne-page layout profile:\n" + json.dumps(profile)
+        user_prompt += "\n\nSource TeX modules:\n" + json.dumps(
+            {name: source_modules.get(name, "") for name in module_names},
+            indent=2,
+        )
+        user_prompt += "\n\nSource letter.tex:\n" + state.get("source_letter_tex", "")
+        required_fields = ["tailored_modules", "tailored_letter_tex"]
+
+    properties = {
+        "tailored_modules": {
+            "type": "object",
+            "properties": {name: {"type": "string"} for name in module_names},
+            "required": list(module_names),
+            "additionalProperties": False,
+        },
     }
-    user_prompt += "\n\nSection instructions:\n" + "\n".join(
-        f"{name}: {instruction}" for name, instruction in section_prompts.items()
-    )
-    user_prompt += "\nletter.tex: " + prompts.get("letter_prompt", "")
-    user_prompt += "\n\nOne-page layout profile:\n" + json.dumps(profile)
-    user_prompt += "\n\nSource TeX modules:\n" + json.dumps(
-        {name: source_modules.get(name, "") for name in module_names},
-        indent=2,
-    )
-    user_prompt += "\n\nSource letter.tex:\n" + state.get("source_letter_tex", "")
+    if not generic:
+        properties["tailored_letter_tex"] = {"type": "string"}
+
     schema = {
         "type": "object",
-        "properties": {
-            "tailored_modules": {
-                "type": "object",
-                "properties": {name: {"type": "string"} for name in module_names},
-                "required": list(module_names),
-                "additionalProperties": False,
-            },
-            "tailored_letter_tex": {"type": "string"},
-        },
-        "required": ["tailored_modules", "tailored_letter_tex"],
+        "properties": properties,
+        "required": required_fields,
         "additionalProperties": False,
     }
     response = post_json_schema(
         api_key=api_key,
         model=state.get("model_name") or os.getenv("OPENROUTER_MODEL_TAILOR") or os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.7-sonnet"),
-        system_prompt=prompts["resume_customizer_system_prompt"],
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         schema_name="tailored_resume_modules",
         schema=schema,
@@ -158,13 +198,12 @@ def _tailor_modules_with_openrouter(state: ResumeTailorState) -> ResumeTailorSta
     modules = response_payload.get("tailored_modules")
     if not isinstance(modules, dict) or any(not isinstance(modules.get(name), str) for name in module_names):
         raise RuntimeError("OpenRouter returned an invalid tailored resume module payload")
-    tailored_letter_tex = response_payload.get("tailored_letter_tex")
-    if not isinstance(tailored_letter_tex, str) or not tailored_letter_tex.strip():
-        raise RuntimeError("OpenRouter returned an invalid tailored letter payload")
-    state["model_output"] = {
-        "tailored_modules": {name: modules[name] for name in module_names},
-        "tailored_letter_tex": tailored_letter_tex,
-    }
+    state["model_output"] = {"tailored_modules": {name: modules[name] for name in module_names}}
+    if not generic:
+        tailored_letter_tex = response_payload.get("tailored_letter_tex")
+        if not isinstance(tailored_letter_tex, str) or not tailored_letter_tex.strip():
+            raise RuntimeError("OpenRouter returned an invalid tailored letter payload")
+        state["model_output"]["tailored_letter_tex"] = tailored_letter_tex
     return state
 
 
@@ -174,6 +213,31 @@ def tailor_modules(state: ResumeTailorState) -> ResumeTailorState:
 
 def validate_output(state: ResumeTailorState) -> ResumeTailorState:
     state["violations"] = []
+    experience = state["model_output"].get("tailored_modules", {}).get("experience.tex", "")
+    experience = re.sub(r"(?m)(?<!\\)%.*$", "", experience)
+    development_blocks = re.findall(
+        r"\\begin\s*\{cvitems\}(.*?)\\end\s*\{cvitems\}\s*"
+        r"\\begin\s*\{cvsubitems\}(.*?)\\end\s*\{cvsubitems\}",
+        experience,
+        flags=re.S,
+    )
+    headings = ("Frontend Development", "Backend Development")
+    for heading in headings:
+        heading_pattern = rf"\\item\s*\{{\s*\\textbf\s*\{{\s*{heading}\s*\}}"
+        other_heading = headings[1] if heading == headings[0] else headings[0]
+        other_pattern = rf"\\textbf\s*\{{\s*{other_heading}\s*\}}"
+        if not any(
+            re.search(heading_pattern, lead_in)
+            and not re.search(other_pattern, lead_in)
+            and re.search(r"\\item\s*\{\s*[^}\s]", subitems)
+            for lead_in, subitems in development_blocks
+        ):
+            state["violations"].append(
+                f"experience.tex must retain a separate {heading} cvitems block "
+                "followed by a non-empty cvsubitems block"
+            )
+    if state["violations"]:
+        raise RuntimeError("Resume output validation failed: " + "; ".join(state["violations"]))
     return state
 
 
@@ -214,7 +278,13 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
     resume_target = resume_root / "resume.tex"
     resume_target.write_text(source_resume.read_text(encoding="utf-8"), encoding="utf-8")
     letter_target = resume_root / "letter.tex"
-    letter_target.write_text(state["model_output"].get("tailored_letter_tex") or source_letter.read_text(encoding="utf-8"), encoding="utf-8")
+    letter_content = state["model_output"].get("tailored_letter_tex")
+    if not letter_content and source_letter.exists():
+        letter_content = source_letter.read_text(encoding="utf-8")
+    if letter_content:
+        letter_target.write_text(letter_content, encoding="utf-8")
+    elif letter_target.exists():
+        letter_target.unlink()
     shutil.copy2(class_file, resume_root / class_file.name)
     if source_fonts.exists():
         shutil.copytree(source_fonts, resume_root / "fonts", dirs_exist_ok=True)
@@ -226,11 +296,12 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
     resume_text = render_env_placeholders(resume_text)
     resume_target.write_text(resume_text, encoding="utf-8")
 
-    letter_text = letter_target.read_text(encoding="utf-8")
-    letter_text = letter_text.replace("\\documentclass[11pt, letterpaper]{../getkan-cv}", "\\documentclass[11pt, letterpaper]{getkan-cv}")
-    letter_text = letter_text.replace("\\fontdir[../fonts/]", "\\fontdir[fonts/]")
-    letter_text = render_env_placeholders(letter_text)
-    letter_target.write_text(letter_text, encoding="utf-8")
+    if letter_content:
+        letter_text = letter_target.read_text(encoding="utf-8")
+        letter_text = letter_text.replace("\\documentclass[11pt, letterpaper]{../getkan-cv}", "\\documentclass[11pt, letterpaper]{getkan-cv}")
+        letter_text = letter_text.replace("\\fontdir[../fonts/]", "\\fontdir[fonts/]")
+        letter_text = render_env_placeholders(letter_text)
+        letter_target.write_text(letter_text, encoding="utf-8")
 
     job_destination = destination / "job"
     job_destination.mkdir(parents=True, exist_ok=True)
@@ -240,7 +311,7 @@ def write_artifacts(state: ResumeTailorState, output_dir: str | Path, job_name: 
         "output_path": str(output_path),
         "resume_root": str(resume_root),
         "resume_tex": str(resume_target),
-        "letter_tex": str(letter_target),
+        "letter_tex": str(letter_target) if letter_content else "",
         "output_dir": str(destination),
         "job_name": job_name,
     }
@@ -275,7 +346,11 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
         return {"compile_log": "xelatex not available on PATH", "summary": "Tailoring completed, PDF compile skipped", "pdf_path": "", "cv_pdf_path": ""}
 
     resume_tex = Path(artifacts["resume_tex"])
-    letter_tex = Path(artifacts.get("letter_tex") or resume_tex.with_name("letter.tex"))
+    if "letter_tex" in artifacts:
+        letter_path = artifacts["letter_tex"]
+        letter_tex = Path(letter_path) if letter_path else None
+    else:
+        letter_tex = resume_tex.with_name("letter.tex")
     source_root = Path(artifacts.get("resume_root") or artifacts.get("tex_root") or resume_tex.parent)
     output_dir = Path(artifacts.get("output_dir") or source_root.parent)
     job_name = str(artifacts.get("job_name") or output_dir.name)
@@ -284,9 +359,12 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
     published_letter_pdf = output_dir / f"{safe_job_name}-letter.pdf"
     logs: list[str] = []
 
+    if letter_tex is None and published_letter_pdf.exists():
+        published_letter_pdf.unlink()
+
     if resume_tex.exists():
         resume_tex.write_text(render_env_placeholders(resume_tex.read_text(encoding="utf-8")), encoding="utf-8")
-    if letter_tex.exists():
+    if letter_tex is not None and letter_tex.exists():
         letter_tex.write_text(render_env_placeholders(letter_tex.read_text(encoding="utf-8")), encoding="utf-8")
 
     resume_ok, resume_logs = _compile_tex_to_pdf(xelatex, source_root, "resume.tex", published_resume_pdf)
@@ -295,7 +373,7 @@ def compile_and_summarize(state: ResumeTailorState, artifacts: dict[str, Any]) -
         return {"compile_log": "\n".join(logs), "summary": "Tailoring completed, resume PDF compile failed", "pdf_path": "", "cv_pdf_path": ""}
 
     cv_pdf_path = ""
-    if letter_tex.exists():
+    if letter_tex is not None and letter_tex.exists():
         letter_ok, letter_logs = _compile_tex_to_pdf(xelatex, source_root, "letter.tex", published_letter_pdf)
         logs.extend(letter_logs)
         if not letter_ok:
@@ -392,10 +470,32 @@ def build_tailored_payload(job_packet: dict[str, Any], job_name: str, output_dir
         "model_name": model_name or "",
     }
     load_context(state)
+    return _build_resume_payload(state, job_name, output_dir)
+
+
+def build_generic_payload(output_dir: str | Path, model_name: str | None = None) -> dict[str, Any]:
+    state: ResumeTailorState = {
+        "job_packet": {},
+        "source_modules": {},
+        "model_output": {},
+        "violations": [],
+        "compile_log": "",
+        "model_name": model_name or "",
+        "generic": True,
+    }
+    load_context(state)
+    return _build_resume_payload(state, "generic", output_dir)
+
+
+def _build_resume_payload(
+    state: ResumeTailorState,
+    job_name: str,
+    output_dir: str | Path,
+) -> dict[str, Any]:
     layout_profiles = [
         {
             "summary_sentences": 2,
-            "experience_cvitems_limit": 1,
+            "experience_cvitems_limit": 2,
             "experience_cvsubitems_limit": 4,
             "personalprojects_limit": 2,
             "aboutme_limit": 1,
@@ -403,7 +503,7 @@ def build_tailored_payload(job_packet: dict[str, Any], job_name: str, output_dir
         },
         {
             "summary_sentences": 2,
-            "experience_cvitems_limit": 1,
+            "experience_cvitems_limit": 2,
             "experience_cvsubitems_limit": 3,
             "personalprojects_limit": 1,
             "aboutme_limit": 1,
@@ -411,13 +511,40 @@ def build_tailored_payload(job_packet: dict[str, Any], job_name: str, output_dir
         },
         {
             "summary_sentences": 1,
-            "experience_cvitems_limit": 1,
+            "experience_cvitems_limit": 2,
             "experience_cvsubitems_limit": 2,
             "personalprojects_limit": 1,
             "aboutme_limit": 0,
             "item_word_limit": 18,
         },
     ]
+    if state.get("generic"):
+        layout_profiles = [
+            {
+                "summary_sentences": 3,
+                "experience_cvitems_limit": 3,
+                "experience_cvsubitems_limit": 7,
+                "personalprojects_limit": 5,
+                "aboutme_limit": 2,
+                "item_word_limit": 38,
+            },
+            {
+                "summary_sentences": 2,
+                "experience_cvitems_limit": 2,
+                "experience_cvsubitems_limit": 5,
+                "personalprojects_limit": 3,
+                "aboutme_limit": 1,
+                "item_word_limit": 30,
+            },
+            {
+                "summary_sentences": 1,
+                "experience_cvitems_limit": 2,
+                "experience_cvsubitems_limit": 2,
+                "personalprojects_limit": 1,
+                "aboutme_limit": 0,
+                "item_word_limit": 18,
+            },
+        ]
 
     compile_result: dict[str, Any] = {"summary": "Tailoring completed, PDF compile skipped", "pdf_path": "", "compile_log": ""}
     artifacts: dict[str, Any] = {}
@@ -429,17 +556,33 @@ def build_tailored_payload(job_packet: dict[str, Any], job_name: str, output_dir
         validate_output(state)
         artifacts = write_artifacts(state, output_dir, job_name=job_name)
         compile_result = compile_and_summarize(state, artifacts)
-        selected_page_count = _pdf_page_count(compile_result.get("pdf_path") or compile_result.get("resume_pdf_path", ""))
+        resume_pdf_path = compile_result.get("pdf_path") or compile_result.get("resume_pdf_path", "")
+        if state.get("generic") and not resume_pdf_path:
+            raise RuntimeError(
+                "Generic resume PDF could not be compiled. Install xelatex and check the LaTeX compile output."
+            )
+        selected_page_count = _pdf_page_count(resume_pdf_path)
+        if state.get("generic") and selected_page_count is None:
+            raise RuntimeError(
+                "Could not verify the generic resume page count. Install pdfinfo to enforce the one-page requirement."
+            )
         if selected_page_count is not None and selected_page_count <= 1:
             break
 
     if selected_page_count is not None:
         compile_result["page_count"] = selected_page_count
+        if state.get("generic"):
+            if selected_page_count > 1:
+                raise RuntimeError(
+                    f"Generic resume exceeds the one-page requirement after all layout profiles: "
+                    f"{selected_page_count} pages"
+                )
+            compile_result["summary"] = "Generic resume generated and compiled"
 
     return {
         "job_name": job_name,
-        "model_name": model_name or "default",
-        "job_packet": job_packet,
+        "model_name": state.get("model_name") or "default",
+        **({"job_packet": state["job_packet"]} if not state.get("generic") else {}),
         "artifacts": artifacts,
         "model_output": state["model_output"],
         "compile": compile_result,

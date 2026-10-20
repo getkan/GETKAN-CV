@@ -277,6 +277,16 @@ Use `tailor` after reviewing or editing a job folder. The folder must contain bo
 
 This writes `tailored_resume.json`, customized resume and letter text files, and compiled PDF outputs in the target folder.
 
+All resume layout profiles permit at least two experience blocks. Generated experience must preserve separate **Frontend Development** and **Backend Development** bold lead-ins in `cvitems` blocks, each followed by a non-empty `cvsubitems` block. Output missing either development group is rejected before artifacts are written or compiled.
+
+To generate a general-purpose resume without a job packet or custom prompt configuration:
+
+```bash
+./tailor-resume tailor --generic
+```
+
+Generic artifacts are written to `output/generic/`. The resume generator applies progressively tighter layout profiles to meet the one-page requirement and reports an error if the compiled resume still exceeds one page or its page count cannot be verified. Generic generation therefore requires both `xelatex` and `pdfinfo`.
+
 ### 3) Generate job hunt recommendations from saved packets
 
 ```bash

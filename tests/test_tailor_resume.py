@@ -18,8 +18,16 @@ from pathlib import Path
 from unittest.mock import patch
 
 from src.application.deterministic_tailor import _score_item, build_allowlist
-from src.application.tailor_resume import build_tailored_payload, tailor_modules
-from src.cli import clean_workspace_artifacts, load_listing_from_file, run, tailor_from_job_folder
+from src.application.tailor_resume import (
+    build_generic_payload,
+    build_tailored_payload,
+    compile_and_summarize,
+    load_context,
+    tailor_modules,
+    validate_output,
+    write_artifacts,
+)
+from src.cli import clean_workspace_artifacts, load_listing_from_file, main, run, tailor_from_job_folder
 
 
 TAILORED_CV_TEX = r"""\documentclass[11pt, letterpaper]{../getkan-cv}
@@ -46,8 +54,181 @@ I am excited about this Senior Engineer role because it connects with my full-st
 \end{document}
 """
 
+DEVELOPMENT_BLOCKS = r"""
+\begin{cvitems}
+    \item {\textbf{Frontend Development} - Delivered frontend applications.}
+\end{cvitems}
+\begin{cvsubitems}
+    \item {Built component libraries.}
+\end{cvsubitems}
+\begin{cvitems}
+    \item {\textbf{Backend Development} - Delivered backend systems.}
+\end{cvitems}
+\begin{cvsubitems}
+    \item {Designed REST APIs.}
+\end{cvsubitems}
+"""
+
+TAILORED_EXPERIENCE_TEX = (
+    r"\cvsection{Work Experience}\begin{cventries}"
+    r"\cventry{Senior Software Engineer}{ReviewPush}{Austin, TX}{2018 - Present}{"
+    + DEVELOPMENT_BLOCKS
+    + r"}\end{cventries}"
+)
+
 
 class TailorResumeTests(unittest.TestCase):
+    def _create_resume_source(self, repo_root: Path, include_letter: bool = True) -> None:
+        resume_root = repo_root / "resume"
+        modules_root = resume_root / "modules"
+        modules_root.mkdir(parents=True)
+        (resume_root / "resume.tex").write_text("\\documentclass{article}", encoding="utf-8")
+        (repo_root / "getkan-cv.cls").write_text("", encoding="utf-8")
+        for name in ("summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex"):
+            (modules_root / name).write_text(name, encoding="utf-8")
+        if include_letter:
+            (resume_root / "letter.tex").write_text("source letter", encoding="utf-8")
+
+    def test_load_context_allows_missing_letter_only_for_generic_resume(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            fake_module = repo_root / "src" / "application" / "tailor_resume.py"
+            fake_module.parent.mkdir(parents=True)
+            fake_module.touch()
+            self._create_resume_source(repo_root, include_letter=False)
+            generic_state = {"generic": True}
+
+            with patch("src.application.tailor_resume.__file__", str(fake_module)), patch(
+                "src.application.tailor_resume._load_prompt_config", return_value={}
+            ):
+                load_context(generic_state)
+
+                self.assertEqual(generic_state["source_letter_tex"], "")
+                self.assertEqual(
+                    set(generic_state["source_modules"]),
+                    {"summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex"},
+                )
+                with self.assertRaisesRegex(FileNotFoundError, "Base resume source is incomplete"):
+                    load_context({"generic": False})
+
+    def test_write_artifacts_does_not_reuse_stale_letter_for_generic_resume(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            fake_module = repo_root / "src" / "application" / "tailor_resume.py"
+            fake_module.parent.mkdir(parents=True)
+            fake_module.touch()
+            self._create_resume_source(repo_root, include_letter=False)
+            output_root = repo_root / "output"
+            stale_letter = output_root / "resume" / "letter.tex"
+            stale_letter.parent.mkdir(parents=True)
+            stale_letter.write_text("stale letter", encoding="utf-8")
+            stale_pdf = output_root / "generic-letter.pdf"
+            stale_pdf.write_text("stale PDF", encoding="utf-8")
+            state = {
+                "generic": True,
+                "model_output": {"tailored_modules": {}},
+            }
+
+            with patch("src.application.tailor_resume.__file__", str(fake_module)):
+                artifacts = write_artifacts(state, output_root, "generic")
+
+                self.assertEqual(artifacts["letter_tex"], "")
+                self.assertFalse(stale_letter.exists())
+                with patch("src.application.tailor_resume.shutil.which", return_value="xelatex"), patch(
+                    "src.application.tailor_resume._compile_tex_to_pdf",
+                    return_value=(True, []),
+                ) as compile_mock:
+                    compile_and_summarize(state, artifacts)
+
+            self.assertFalse(stale_pdf.exists())
+            self.assertEqual(
+                [call.args[2] for call in compile_mock.call_args_list],
+                ["resume.tex"],
+            )
+
+    def test_validate_output_accepts_separate_development_blocks(self):
+        state = {"model_output": {"tailored_modules": {"experience.tex": DEVELOPMENT_BLOCKS}}}
+
+        self.assertIs(validate_output(state), state)
+        self.assertEqual(state["violations"], [])
+
+    def test_validate_output_rejects_missing_or_invalid_development_blocks(self):
+        cases = {
+            "missing frontend": DEVELOPMENT_BLOCKS.replace("Frontend Development", "Other Development"),
+            "missing backend": DEVELOPMENT_BLOCKS.replace("Backend Development", "Other Development"),
+            "merged": DEVELOPMENT_BLOCKS.replace("Frontend Development", "Full-Stack Development"),
+            "shared lead-in block": DEVELOPMENT_BLOCKS.replace(
+                r"\item {\textbf{Frontend Development}",
+                r"\item {\textbf{Backend Development} and \textbf{Frontend Development}",
+            ),
+            "empty frontend subitems": DEVELOPMENT_BLOCKS.replace(
+                r"\item {Built component libraries.}", ""
+            ),
+            "commented frontend": DEVELOPMENT_BLOCKS.replace(
+                r"\item {\textbf{Frontend Development}",
+                r"% \item {\textbf{Frontend Development}",
+            ),
+            "missing module": "",
+            "headings without blocks": r"\textbf{Frontend Development}\textbf{Backend Development}",
+        }
+        for name, experience in cases.items():
+            with self.subTest(name=name):
+                state = {"model_output": {"tailored_modules": {"experience.tex": experience}}}
+                with self.assertRaisesRegex(RuntimeError, "Resume output validation failed"):
+                    validate_output(state)
+                self.assertTrue(state["violations"])
+
+    def test_build_tailored_payload_rejects_invalid_output_before_writing(self):
+        with patch(
+            "src.application.tailor_resume.load_context"
+        ), patch(
+            "src.application.tailor_resume.tailor_modules"
+        ), patch(
+            "src.application.tailor_resume.write_artifacts"
+        ) as write_mock, patch(
+            "src.application.tailor_resume.compile_and_summarize"
+        ) as compile_mock:
+            with self.assertRaisesRegex(RuntimeError, "Frontend Development"):
+                build_tailored_payload({}, "test", "unused")
+
+        write_mock.assert_not_called()
+        compile_mock.assert_not_called()
+
+    def test_all_layout_profiles_permit_both_development_blocks(self):
+        for generic in (False, True):
+            with self.subTest(generic=generic):
+                limits = []
+
+                def generate_modules(state):
+                    limits.append(state["layout_profile"]["experience_cvitems_limit"])
+                    state["model_output"] = {
+                        "tailored_modules": {"experience.tex": DEVELOPMENT_BLOCKS}
+                    }
+                    return state
+
+                with patch(
+                    "src.application.tailor_resume.load_context"
+                ), patch(
+                    "src.application.tailor_resume.tailor_modules",
+                    side_effect=generate_modules,
+                ), patch(
+                    "src.application.tailor_resume.write_artifacts",
+                    return_value={},
+                ), patch(
+                    "src.application.tailor_resume.compile_and_summarize",
+                    return_value={"pdf_path": "test.pdf"},
+                ), patch(
+                    "src.application.tailor_resume._pdf_page_count",
+                    side_effect=[2, 2, 1],
+                ):
+                    if generic:
+                        build_generic_payload("unused")
+                    else:
+                        build_tailored_payload({}, "test", "unused")
+
+                self.assertEqual(len(limits), 3)
+                self.assertTrue(all(limit >= 2 for limit in limits))
+
     def test_tailor_modules_propagates_openrouter_errors(self):
         state = {
             "job_packet": {},
@@ -99,6 +280,8 @@ class TailorResumeTests(unittest.TestCase):
 
         openrouter_mock.assert_called_once()
         self.assertIn("Tailor the CV letter", openrouter_mock.call_args.kwargs["user_prompt"])
+        request_schema = openrouter_mock.call_args.kwargs["schema"]
+        self.assertEqual(set(request_schema["properties"]), set(request_schema["required"]))
         self.assertEqual(state["model_output"]["tailored_modules"]["summary.tex"], "AI summary.tex")
         self.assertEqual(state["model_output"]["tailored_letter_tex"], TAILORED_CV_TEX)
 
@@ -137,7 +320,7 @@ class TailorResumeTests(unittest.TestCase):
                 {
                     "tailored_modules": {
                         "summary.tex": "\\begin{cvparagraph}\nSenior Software Engineer\n\\end{cvparagraph}",
-                        "experience.tex": "\\cvsection{Experience}",
+                        "experience.tex": TAILORED_EXPERIENCE_TEX,
                         "personalprojects.tex": "\\cvsection{Personal Projects}",
                         "aboutme.tex": "Bachelor of Arts in Computer Science\nBachelor of Arts in Economics",
                     },
@@ -190,6 +373,87 @@ class TailorResumeTests(unittest.TestCase):
                 self.assertEqual(payload["compile"]["pdf_path"], "")
                 self.assertEqual(payload["compile"]["cv_pdf_path"], "")
             self.assertTrue(Path(tmpdir, "job", "tailored_resume.json").exists())
+
+    def test_build_generic_payload_uses_configured_prompts_and_one_page_profiles(self):
+        module_names = ("summary.tex", "experience.tex", "personalprojects.tex", "aboutme.tex")
+        response = json.dumps(
+            {
+                "tailored_modules": {
+                    name: TAILORED_EXPERIENCE_TEX if name == "experience.tex" else f"Generic {name}"
+                    for name in module_names
+                }
+            }
+        )
+        with tempfile.TemporaryDirectory() as tmpdir, patch.dict(
+            os.environ, {"OPENROUTER_API_KEY": "test-key"}
+        ), patch(
+            "src.application.tailor_resume.PROMPT_CONFIG_PATH",
+            Path(tmpdir) / "prompts.json",
+        ), patch(
+            "src.application.tailor_resume.post_json_schema",
+            return_value=response,
+        ) as openrouter_mock, patch(
+            "src.application.tailor_resume.compile_and_summarize",
+            return_value={"pdf_path": str(Path(tmpdir) / "generic-resume.pdf"), "summary": "compiled"},
+        ), patch(
+            "src.application.tailor_resume._pdf_page_count",
+            side_effect=[2, 1],
+        ):
+            (Path(tmpdir) / "prompts.json").write_text(
+                json.dumps(
+                    {
+                        "tailor": {
+                            "generic_resume_system_prompt": "Configured generic system prompt",
+                            "generic_resume_user_prompt": (
+                                "Configured generic user prompt. Preserve separate Frontend "
+                                "Development and Backend Development sections.\n"
+                                "Layout: {layout_profile}\nModules: {source_modules}"
+                            ),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            payload = build_generic_payload(tmpdir)
+            summary_module_exists = Path(tmpdir, "resume", "modules", "summary.tex").exists()
+
+        self.assertEqual(payload["job_name"], "generic")
+        self.assertNotIn("job_packet", payload)
+        self.assertNotIn("tailored_letter_tex", payload["model_output"])
+        self.assertEqual(len(openrouter_mock.call_args_list), 2)
+        first_call = openrouter_mock.call_args_list[0].kwargs
+        self.assertEqual(first_call["system_prompt"], "Configured generic system prompt")
+        first_prompt = first_call["user_prompt"]
+        self.assertIn("Configured generic user prompt.", first_prompt)
+        self.assertIn("Frontend Development and Backend Development sections", first_prompt)
+        self.assertNotIn("additional_prompt", first_prompt)
+        self.assertIn('"experience_cvsubitems_limit": 7', first_prompt)
+        self.assertIn('"personalprojects_limit": 5', first_prompt)
+        request_schema = first_call["schema"]
+        self.assertEqual(set(request_schema["properties"]), set(request_schema["required"]))
+        self.assertNotIn("tailored_letter_tex", request_schema["properties"])
+        second_prompt = openrouter_mock.call_args_list[1].kwargs["user_prompt"]
+        self.assertIn('"experience_cvsubitems_limit": 5', second_prompt)
+        self.assertEqual(payload["compile"]["page_count"], 1)
+        self.assertTrue(summary_module_exists)
+
+    def test_tailor_generic_cli_defaults_to_output_generic(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            previous_cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                with patch("sys.argv", ["tailor-resume", "tailor", "--generic"]), patch(
+                    "src.cli._require_resume_source"
+                ), patch(
+                    "src.cli.build_generic_payload",
+                    return_value={"compile": {"pdf_path": "output/generic/generic-resume.pdf", "summary": "compiled"}},
+                ) as generic_mock:
+                    exit_code = main()
+            finally:
+                os.chdir(previous_cwd)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(generic_mock.call_args.args[0], Path(tmpdir) / "output" / "generic")
 
     def test_run_uses_current_working_directory_for_default_output(self):
         with tempfile.TemporaryDirectory() as tmpdir:
