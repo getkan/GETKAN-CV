@@ -63,10 +63,17 @@ DEFAULT_PROMPTS: dict[str, str] = {
     ),
     "additional_prompt": "Highlighted relevance to {skills} using existing experience while preserving factual accuracy.",
     "summary_section_prompt": "Keep the summary mostly intact and only adjust technology mentions based on overlap with experience evidence.",
-    "experience_section_prompt": "Preserve original job grouping and order. Remove or reword bullets in place without mixing roles.",
+    "experience_section_prompt": (
+        "Preserve original job grouping and order. Remove or reword bullets in place without mixing roles. "
+        "Retain AI-Driven Development whenever the job signals AI-forward engineering (AI, LLM, or AI-agent skills; "
+        "coding-agent or AI-automation qualifications; or an AI-product employer); otherwise it may be omitted."
+    ),
     "personalprojects_section_prompt": (
-        "Use fixed project priority independent of job description and only include the intro header when multiple projects are present. "
-        "Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus"
+        "Select only projects present in the source module and only include the intro header when multiple projects are present. "
+        "Include AI-focused projects when the job signals AI-forward engineering in must_have, nice_to_have, responsibilities, "
+        "description, company, domain, or metadata.raw_listing_text (AI, LLM, or AI-agent skills; AI-forward or coding-agent "
+        "qualifications; side projects in AI tooling; or an AI-product employer). Treat a project built on the employer's own "
+        "product or API as the highest priority. Otherwise omit AI-focused projects."
     ),
     "aboutme_section_prompt": "Always include required education facts in About Me.",
     "letter_prompt": (
@@ -495,9 +502,9 @@ def _build_resume_payload(
     layout_profiles = [
         {
             "summary_sentences": 2,
-            "experience_cvitems_limit": 2,
+            "experience_cvitems_limit": 3,
             "experience_cvsubitems_limit": 4,
-            "personalprojects_limit": 2,
+            "personalprojects_limit": 3,
             "aboutme_limit": 1,
             "item_word_limit": 28,
         },
@@ -505,7 +512,7 @@ def _build_resume_payload(
             "summary_sentences": 2,
             "experience_cvitems_limit": 2,
             "experience_cvsubitems_limit": 3,
-            "personalprojects_limit": 1,
+            "personalprojects_limit": 2,
             "aboutme_limit": 1,
             "item_word_limit": 24,
         },

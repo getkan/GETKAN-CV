@@ -198,9 +198,11 @@ class TailorResumeTests(unittest.TestCase):
         for generic in (False, True):
             with self.subTest(generic=generic):
                 limits = []
+                project_limits = []
 
                 def generate_modules(state):
                     limits.append(state["layout_profile"]["experience_cvitems_limit"])
+                    project_limits.append(state["layout_profile"]["personalprojects_limit"])
                     state["model_output"] = {
                         "tailored_modules": {"experience.tex": DEVELOPMENT_BLOCKS}
                     }
@@ -228,6 +230,11 @@ class TailorResumeTests(unittest.TestCase):
 
                 self.assertEqual(len(limits), 3)
                 self.assertTrue(all(limit >= 2 for limit in limits))
+                # First profile must leave room for the Leadership/AI-Driven block and AI projects.
+                self.assertGreaterEqual(limits[0], 3)
+                self.assertGreaterEqual(project_limits[0], 3)
+                self.assertEqual(limits, sorted(limits, reverse=True))
+                self.assertEqual(project_limits, sorted(project_limits, reverse=True))
 
     def test_tailor_modules_propagates_openrouter_errors(self):
         state = {

@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 from src.application.advise import _load_advisor_prompts
 from src.application.parse_job import _load_parser_prompts
-from src.application.tailor_resume import DEFAULT_PROMPTS, _load_prompt_config
+from src.application.tailor_resume import DEFAULT_PROMPTS, PROMPT_CONFIG_PATH, _load_prompt_config
 
 
 class PromptConfigTests(unittest.TestCase):
@@ -60,6 +60,21 @@ class PromptConfigTests(unittest.TestCase):
         self.assertIn("fill the page", prompt)
         self.assertIn("'Frontend Development' and 'Backend Development'", prompt)
         self.assertIn("Never combine them under a 'Full-Stack Development' heading", prompt)
+
+    def test_tailor_prompts_include_ai_projects_for_ai_forward_roles(self):
+        with patch("src.application.tailor_resume.PROMPT_CONFIG_PATH", PROMPT_CONFIG_PATH):
+            prompts = _load_prompt_config()
+
+        for source in (prompts, DEFAULT_PROMPTS):
+            projects_prompt = source["personalprojects_section_prompt"]
+            experience_prompt = source["experience_section_prompt"]
+            self.assertIn("AI-forward", projects_prompt)
+            self.assertIn("metadata.raw_listing_text", projects_prompt)
+            self.assertIn("employer's own product", projects_prompt)
+            self.assertNotIn("isolated AI label in a skill list", projects_prompt)
+            self.assertNotIn("ordinary use of AI-assisted coding", projects_prompt)
+            self.assertIn("Retain AI-Driven Development", experience_prompt)
+            self.assertIn("AI-forward", experience_prompt)
 
     def test_advisor_loader_reads_override_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
