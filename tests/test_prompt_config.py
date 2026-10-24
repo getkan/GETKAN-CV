@@ -76,6 +76,22 @@ class PromptConfigTests(unittest.TestCase):
             self.assertIn("Retain AI-Driven Development", experience_prompt)
             self.assertIn("AI-forward", experience_prompt)
 
+    def test_tailor_projects_prioritize_linux_unless_mystic_matches_frontend_stack(self):
+        prompts = _load_prompt_config()
+
+        for name, source in (("configured", prompts), ("fallback", DEFAULT_PROMPTS)):
+            with self.subTest(source=name):
+                self.assertIn(
+                    "Prioritize Linux Enthusiast over Mystic Type-Writer when selecting "
+                    "projects for limited space, except when Mystic Type-Writer matches "
+                    "the role's frontend stack; in that case, prioritize Mystic Type-Writer.",
+                    source["personalprojects_section_prompt"],
+                )
+                self.assertNotIn(
+                    "even when Mystic Type-Writer matches",
+                    source["personalprojects_section_prompt"],
+                )
+
     def test_advisor_loader_reads_override_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "advisor-prompts.json"

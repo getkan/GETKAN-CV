@@ -73,7 +73,10 @@ DEFAULT_PROMPTS: dict[str, str] = {
         "Include AI-focused projects when the job signals AI-forward engineering in must_have, nice_to_have, responsibilities, "
         "description, company, domain, or metadata.raw_listing_text (AI, LLM, or AI-agent skills; AI-forward or coding-agent "
         "qualifications; side projects in AI tooling; or an AI-product employer). Treat a project built on the employer's own "
-        "product or API as the highest priority. Otherwise omit AI-focused projects."
+        "product or API as the highest priority. Otherwise omit AI-focused projects. "
+        "Prioritize Linux Enthusiast over Mystic Type-Writer when selecting projects for limited space, "
+        "except when Mystic Type-Writer matches the role's frontend stack; in that case, prioritize Mystic Type-Writer. "
+        "This is a selection preference; preserve the relative source order of retained projects."
     ),
     "aboutme_section_prompt": "Always include required education facts in About Me.",
     "letter_prompt": (

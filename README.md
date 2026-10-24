@@ -204,6 +204,12 @@ To customize personal project order, include it directly inside `personalproject
 
 `Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus`
 
+The default tailoring prompt prioritizes Linux Enthusiast over Mystic Type-Writer
+when selecting projects for limited space, except when Mystic Type-Writer matches
+the role's frontend stack; in that case, Mystic Type-Writer takes priority.
+This preference affects selection, not the source-relative order of retained
+projects; the existing AI-project eligibility rules still apply.
+
 ## Command Reference
 
 ### 1) Parse a job listing
