@@ -92,6 +92,29 @@ class PromptConfigTests(unittest.TestCase):
                     source["personalprojects_section_prompt"],
                 )
 
+    def test_tailor_projects_match_job_stack_before_default_preferences(self):
+        prompts = _load_prompt_config()
+
+        for name, source in (("configured", prompts), ("fallback", DEFAULT_PROMPTS)):
+            with self.subTest(source=name):
+                prompt = source["personalprojects_section_prompt"]
+                self.assertIn(
+                    "Among eligible projects, select matches to the job's explicitly "
+                    "requested tech stack first, using only technologies stated in each source project.",
+                    prompt,
+                )
+                self.assertIn(
+                    "For a React role, select Miss Micro's Magick Wheel before NickPad "
+                    "because the wheel uses React.",
+                    prompt,
+                )
+                self.assertIn(
+                    "Apply default preferences only after tech-stack matches: "
+                    "among equally matching or non-matching projects,",
+                    prompt,
+                )
+                self.assertNotIn("as the highest priority", prompt)
+
     def test_advisor_loader_reads_override_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "advisor-prompts.json"

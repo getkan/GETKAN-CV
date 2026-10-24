@@ -204,6 +204,13 @@ To customize personal project order, include it directly inside `personalproject
 
 `Priority order: getkan-cv||linux enthusiast||mystic type-writer||notesboard plus plus`
 
+Eligible projects matching the job's explicitly requested tech stack are selected
+first, using only technologies documented in each source project. For example,
+Miss Micro's Magick Wheel takes priority over NickPad for a React role.
+Default preferences apply only among equally matching or non-matching projects:
+prefer projects using the employer's own product/API, then apply the Linux/Mystic
+preference below.
+
 The default tailoring prompt prioritizes Linux Enthusiast over Mystic Type-Writer
 when selecting projects for limited space, except when Mystic Type-Writer matches
 the role's frontend stack; in that case, Mystic Type-Writer takes priority.
